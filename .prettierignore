@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Environment files
+.env*
+
+# Cache directories
+.turbo/
+.eslintcache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Database
+prisma/migrations/
+*.db
+*.sqlite
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+*-lock.yaml
