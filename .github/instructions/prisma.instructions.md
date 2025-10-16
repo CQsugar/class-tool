@@ -1,29 +1,33 @@
 ---
-applyTo: "prisma/**/*.prisma,src/lib/prisma.ts,src/app/api/**/*.ts"
-description: "Prisma数据库开发最佳实践"
+applyTo: 'prisma/**/*.prisma,src/lib/prisma.ts,src/app/api/**/*.ts'
+description: 'Prisma数据库开发最佳实践'
 ---
 
 # Prisma + PostgreSQL 开发指令
 
 ## 数据库设计
+
 - 使用明确的表名和字段名
 - 设置适当的索引提升查询性能
 - 使用外键约束确保数据完整性
 - 实现软删除而非硬删除
 
 ## Schema最佳实践
+
 - 使用枚举类型约束数据
 - 设置默认值和非空约束
 - 使用@map重命名数据库字段
 - 添加@@map自定义表名
 
 ## 查询优化
+
 - 使用include/select优化关联查询
 - 避免N+1查询问题
 - 使用事务处理复杂操作
 - 实现分页查询
 
 ## 类型安全
+
 - 使用Prisma生成的类型
 - 创建自定义类型和验证
 - 使用Zod验证输入数据
@@ -49,12 +53,12 @@ model User {
   password  String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
+
   // 关联关系
   students  Student[]
   pointRules PointRule[]
   pointRecords PointRecord[]
-  
+
   @@map("users")
 }
 
@@ -69,7 +73,7 @@ model Student {
   isArchived  Boolean  @default(false) @map("is_archived")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-  
+
   // 关联关系
   userId      String   @map("user_id")
   user        User     @relation(fields: [userId], references: [id])
@@ -77,7 +81,7 @@ model Student {
   tags        StudentTag[]
   pointRecords PointRecord[]
   redemptions  Redemption[]
-  
+
   @@index([userId])
   @@index([studentNo])
   @@map("students")
@@ -136,7 +140,7 @@ export async function addPointsToStudent(
   userId: string,
   ruleId?: string
 ) {
-  return await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async tx => {
     // 更新学生积分
     await tx.student.update({
       where: { id: studentId },
@@ -161,6 +165,7 @@ export async function addPointsToStudent(
 ```
 
 ## 数据验证
+
 - 使用Zod创建输入验证schema
 - 验证与Prisma类型保持一致
 - 处理数据库约束错误

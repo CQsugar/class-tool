@@ -1,3 +1,5 @@
-# 验证 commit 消息格式（可选）
-# 这里可以添加 commit 消息格式验证逻辑
-# 例如使用 commitlint 或自定义验证
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 验证commit消息格式
+npx --no -- commitlint --edit $1

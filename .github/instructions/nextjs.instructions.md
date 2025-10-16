@@ -1,11 +1,12 @@
 ---
-applyTo: "src/app/**/*.tsx,src/app/**/*.ts,src/components/**/*.tsx,src/components/**/*.ts"
-description: "Next.js App Router开发最佳实践"
+applyTo: 'src/app/**/*.tsx,src/app/**/*.ts,src/components/**/*.tsx,src/components/**/*.ts'
+description: 'Next.js App Router开发最佳实践'
 ---
 
 # Next.js App Router 开发指令
 
 ## 项目结构
+
 - 使用App Router (`src/app/`)目录结构
 - 使用路由分组组织页面：`(auth)`、`(dashboard)`等 (括号内名称不影响URL路径，仅用于组织代码和共享布局)
 - 组件放在`src/components/`，按功能模块分类
@@ -13,6 +14,7 @@ description: "Next.js App Router开发最佳实践"
 - API路由使用`route.ts`文件
 
 ## 代码规范
+
 - 所有组件使用TypeScript
 - 使用函数式组件和React Hooks
 - 服务端组件优先，仅在需要时使用`'use client'`
@@ -20,6 +22,7 @@ description: "Next.js App Router开发最佳实践"
 - 组件名使用PascalCase，文件名使用kebab-case
 
 ## 性能优化
+
 - 使用动态导入分割代码
 - 图片使用`next/image`组件
 - 字体使用`next/font`优化
@@ -27,6 +30,7 @@ description: "Next.js App Router开发最佳实践"
 - 避免不必要的客户端渲染
 
 ## 数据获取
+
 - 服务端组件中直接获取数据
 - 使用Prisma进行数据库操作
 - API路由处理复杂业务逻辑

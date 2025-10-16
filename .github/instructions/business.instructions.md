@@ -1,11 +1,12 @@
 ---
-applyTo: "src/**/*.ts,src/**/*.tsx"
-description: "班主任班级管理平台业务逻辑开发指令"
+applyTo: 'src/**/*.ts,src/**/*.tsx'
+description: '班主任班级管理平台业务逻辑开发指令'
 ---
 
 # 班主任班级管理平台 - 业务逻辑开发指令
 
 ## 业务逻辑要求
+
 - 支持50+学生的班级管理
 - 积分系统不设上下限，支持负数
 - 随机点名支持24小时避重
@@ -13,6 +14,7 @@ description: "班主任班级管理平台业务逻辑开发指令"
 - 数据归档仅包含学生信息，不包含规则和商品
 
 ## 用户体验
+
 - 界面简洁直观，适合非技术背景用户
 - 重要操作提供二次确认
 - 支持快捷键操作
@@ -20,18 +22,21 @@ description: "班主任班级管理平台业务逻辑开发指令"
 - 提供友好的错误提示
 
 ## 性能要求
+
 - 支持50+学生数据快速加载
 - 积分记录查询支持分页
 - 批量操作显示进度
 - 优化数据库查询性能
 
 ## 数据安全
+
 - 学生信息加密存储
 - 完整的操作日志记录
 - 定期数据备份
 - 实现权限控制
 
 ## 功能优先级
+
 1. 快速积分加减操作面板
 2. 随机点名工具
 3. 学生个人积分排行榜
@@ -52,18 +57,18 @@ export async function updateStudentPoints(data: {
 }) {
   // 验证学生存在
   const student = await prisma.student.findUnique({
-    where: { id: data.studentId }
+    where: { id: data.studentId },
   })
-  
+
   if (!student) {
     throw new Error('学生不存在')
   }
 
   // 使用事务确保数据一致性
-  return await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async tx => {
     await tx.student.update({
       where: { id: data.studentId },
-      data: { points: { increment: data.points } }
+      data: { points: { increment: data.points } },
     })
 
     await tx.pointRecord.create({
@@ -74,21 +79,18 @@ export async function updateStudentPoints(data: {
         type: data.points > 0 ? 'ADD' : 'SUBTRACT',
         userId: data.userId,
         ruleId: data.ruleId,
-      }
+      },
     })
   })
 }
 
 // 随机点名(避重)
-export async function getRandomStudent(
-  userId: string,
-  excludeRecent: boolean = true
-) {
+export async function getRandomStudent(userId: string, excludeRecent: boolean = true) {
   const students = await prisma.student.findMany({
     where: {
       userId,
       isArchived: false,
-    }
+    },
   })
 
   if (excludeRecent) {
@@ -97,24 +99,22 @@ export async function getRandomStudent(
       where: {
         userId,
         createdAt: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
-        }
-      }
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        },
+      },
     })
-    
+
     const excludeIds = recentCalls.map(call => call.studentId)
-    const availableStudents = students.filter(
-      student => !excludeIds.includes(student.id)
-    )
-    
+    const availableStudents = students.filter(student => !excludeIds.includes(student.id))
+
     if (availableStudents.length === 0) {
       // 如果所有学生都被点过，重置记录
       await prisma.randomCall.deleteMany({
-        where: { userId }
+        where: { userId },
       })
       return students[Math.floor(Math.random() * students.length)]
     }
-    
+
     return availableStudents[Math.floor(Math.random() * availableStudents.length)]
   }
 
@@ -139,38 +139,40 @@ export async function createPKBattle(data: {
       participants: {
         create: data.participants.map(id => ({
           studentId: id,
-        }))
-      }
+        })),
+      },
     },
     include: {
       participants: {
-        include: { student: true }
-      }
-    }
+        include: { student: true },
+      },
+    },
   })
 }
 
 // Better Auth会话验证示例
 export async function validateSession(request: Request) {
   const session = await auth.api.getSession({
-    headers: request.headers
+    headers: request.headers,
   })
-  
+
   if (!session) {
     throw new Error('未授权访问')
   }
-  
+
   return session.user
 }
 ```
 
 ## 错误处理模式
+
 - 使用try-catch包装异步操作
 - 提供用户友好的错误信息
 - 记录详细的错误日志
 - 实现错误边界组件
 
 ## 代码质量要求
+
 - 函数和变量命名清晰明确
 - 添加必要的代码注释
 - 保持代码的可读性和可维护性
