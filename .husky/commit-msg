@@ -1,5 +1,2 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # 验证commit消息格式
 npx --no -- commitlint --edit $1

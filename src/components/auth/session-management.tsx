@@ -9,9 +9,7 @@ export function SessionManagement() {
       <Card>
         <CardHeader>
           <CardTitle>会话管理</CardTitle>
-          <CardDescription>
-            管理您在不同设备上的登录会话，撤销可疑的登录状态
-          </CardDescription>
+          <CardDescription>管理您在不同设备上的登录会话，撤销可疑的登录状态</CardDescription>
         </CardHeader>
         <CardContent>
           <SessionsCard />
