@@ -15,7 +15,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // 开发阶段暂时禁用邮箱验证
-    allowSignUp: true, // 明确启用注册功能
+    disableSignUp: false, // 明确启用注册功能
+  },
+
+  // 账户字段映射配置
+  account: {
+    fields: {
+      accountId: 'accountId',
+      providerId: 'providerId',
+    },
   },
 
   // 会话管理配置
@@ -26,16 +34,6 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 60 * 5, // 5分钟缓存
-    },
-  },
-
-  // 用户资料配置
-  user: {
-    additionalFields: {
-      name: {
-        type: 'string',
-        required: true,
-      },
     },
   },
 

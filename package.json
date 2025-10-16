@@ -14,9 +14,9 @@
     "check:all": "pnpm run lint && pnpm run format:check && pnpm run check:types",
     "prepare": "husky",
     "test": "vitest run",
-    "db:seed": "pnpx tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && pnpm db:seed",
-    "db:generate": "prisma generate"
+    "db:reset": "prisma db push --force-reset",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@daveyplate/better-auth-ui": "^3.2.6",
