@@ -14,6 +14,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // 开发阶段暂时禁用邮箱验证
+    allowSignUp: true, // 明确启用注册功能
+  },
+
+  // 用户资料配置
+  user: {
+    additionalFields: {
+      name: {
+        type: "string",
+        required: true,
+      },
+    },
   },
 
   // 安全配置

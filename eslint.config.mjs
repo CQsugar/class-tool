@@ -10,26 +10,10 @@ const compat = new FlatCompat({
 })
 
 const eslintConfig = [
-  ...compat.config({
-    extends: ['next/core-web-vitals', 'next/typescript', 'prettier'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-    },
-    ignorePatterns: [
-      'node_modules/**',
-      '.next/**',
-      'out/**',
-      'build/**',
-      'dist/**',
-      'next-env.d.ts',
-      '**/__tests__/**',
-      'coverage/**',
-      'public/**',
-      '*.config.js',
-      '*.config.mjs',
-      'prisma/migrations/**',
-    ],
-  }),
+  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
+  {
+    ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
+  },
 ]
 
 export default eslintConfig

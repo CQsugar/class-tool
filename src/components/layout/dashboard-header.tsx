@@ -1,17 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Bell, Search, Menu, User, Settings, LogOut, HelpCircle } from 'lucide-react'
+import { Bell, Search, Menu } from 'lucide-react'
+import { DashboardUserButton } from '@/components/auth/dashboard-user-button'
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void
@@ -49,43 +42,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
           </Button>
 
           {/* 用户菜单 */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600">
-                  <span className="text-sm font-medium text-white">张</span>
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm leading-none font-medium">张老师</p>
-                  <p className="text-muted-foreground text-xs leading-none">
-                    zhang.teacher@school.edu.cn
-                  </p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>个人资料</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>设置</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                <span>帮助支持</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>退出登录</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <DashboardUserButton />
         </div>
       </div>
     </header>

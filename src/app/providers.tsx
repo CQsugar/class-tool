@@ -4,6 +4,7 @@ import { AuthUIProvider } from '@daveyplate/better-auth-ui'
 import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Toaster } from '@/components/ui/sonner'
 import type { ReactNode } from 'react'
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -282,6 +283,7 @@ export function Providers({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      <Toaster />
     </AuthUIProvider>
   )
 }

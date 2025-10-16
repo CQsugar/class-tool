@@ -6,16 +6,23 @@
 
 - `src/app/layout.tsx` - Next.js App Router根布局文件，包含全局样式和认证配置
 - `src/app/page.tsx` - 首页/控制台仪表板页面
+- `src/app/providers.tsx` - AuthUIProvider配置文件，包含中文本地化
 - `src/app/api/auth/[...all]/route.ts` - Better Auth API路由处理器
 - `src/app/(auth)/auth/[path]/page.tsx` - auth页面聚合
+- `src/app/(dashboard)/settings/page.tsx` - 用户设置页面
 - `src/app/(dashboard)/students/page.tsx` - 学生信息管理页面
 - `src/app/(dashboard)/points/page.tsx` - 积分系统管理页面
 - `src/app/(dashboard)/store/page.tsx` - 积分商城页面
 - `src/app/(dashboard)/archive/page.tsx` - 数据归档页面
 - `src/components/ui/` - shadcn/ui组件目录
+- `src/components/ui/sonner.tsx` - Sonner toast通知组件
 - `src/components/dashboard/` - 自定义仪表板组件
 - `src/components/forms/` - 表单组件
+- `src/components/auth/profile-form.tsx` - 用户设置表单组件，使用better-auth-ui
+- `src/components/auth/dashboard-user-button.tsx` - Dashboard用户按钮组件
+- `src/components/layout/dashboard-header.tsx` - 更新后的Dashboard头部组件，集成用户认证
 - `src/lib/auth.ts` - Better Auth配置文件
+- `src/lib/auth-client.ts` - Better Auth客户端配置
 - `src/lib/prisma.ts` - Prisma客户端配置
 - `src/lib/utils.ts` - 工具函数
 - `src/lib/validations/` - 数据验证schema
