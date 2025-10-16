@@ -6,6 +6,8 @@ import {
   SecuritySettingsCards,
   UserAvatar 
 } from '@daveyplate/better-auth-ui'
+import { SessionManagement } from './session-management'
+import { SecurityOverview } from './security-overview'
 
 export function ProfileForm() {
   return (
@@ -21,9 +23,11 @@ export function ProfileForm() {
 
       {/* 设置标签页 */}
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="account">账户设置</TabsTrigger>
           <TabsTrigger value="security">安全设置</TabsTrigger>
+          <TabsTrigger value="sessions">会话管理</TabsTrigger>
+          <TabsTrigger value="overview">安全概览</TabsTrigger>
         </TabsList>
         
         <TabsContent value="account" className="space-y-4">
@@ -32,6 +36,14 @@ export function ProfileForm() {
         
         <TabsContent value="security" className="space-y-4">
           <SecuritySettingsCards />
+        </TabsContent>
+
+        <TabsContent value="sessions" className="space-y-4">
+          <SessionManagement />
+        </TabsContent>
+
+        <TabsContent value="overview" className="space-y-4">
+          <SecurityOverview />
         </TabsContent>
       </Tabs>
     </div>

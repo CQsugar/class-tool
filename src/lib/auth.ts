@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
+import { multiSession } from 'better-auth/plugins'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -17,14 +18,33 @@ export const auth = betterAuth({
     allowSignUp: true, // 明确启用注册功能
   },
 
+  // 会话管理配置
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7天过期
+    updateAge: 60 * 60 * 24, // 24小时更新一次
+    freshAge: 60 * 60, // 1小时内的会话被认为是"新鲜"的
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5分钟缓存
+    },
+  },
+
   // 用户资料配置
   user: {
     additionalFields: {
       name: {
-        type: "string",
+        type: 'string',
         required: true,
       },
     },
+  },
+
+  // 高级安全配置
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: false, // 生产环境可根据需要启用
+    },
+    useSecureCookies: process.env.NODE_ENV === 'production',
   },
 
   // 安全配置
@@ -33,6 +53,9 @@ export const auth = betterAuth({
 
   // Next.js 插件配置 - 必须放在最后
   plugins: [
+    multiSession({
+      maximumSessions: 5, // 每个用户最多5个活动会话
+    }),
     nextCookies(), // 处理 Next.js Cookie
   ],
 })
