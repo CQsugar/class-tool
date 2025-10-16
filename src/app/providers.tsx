@@ -1,10 +1,10 @@
 'use client'
 
-import { AuthUIProvider } from '@daveyplate/better-auth-ui'
-import { authClient } from '@/lib/auth-client'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Toaster } from '@/components/ui/sonner'
+import { authClient } from '@/lib/auth-client'
+import { AuthUIProvider } from '@daveyplate/better-auth-ui'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -281,6 +281,7 @@ export function Providers({ children }: { children: ReactNode }) {
         REMEMBER_ME: '记住我',
         ONE_TIME_PASSWORD: '一次性密码',
       }}
+      account={{}}
     >
       {children}
       <Toaster />

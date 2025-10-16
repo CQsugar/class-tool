@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { DashboardHeader } from '@/components/layout/dashboard-header'
 

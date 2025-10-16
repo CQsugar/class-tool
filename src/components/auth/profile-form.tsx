@@ -2,8 +2,8 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AccountSettingsCards, SecuritySettingsCards, UserAvatar } from '@daveyplate/better-auth-ui'
-import { SessionManagement } from './session-management'
 import { SecurityOverview } from './security-overview'
+import { SessionManagement } from './session-management'
 
 export function ProfileForm() {
   return (

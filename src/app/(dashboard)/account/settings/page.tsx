@@ -1,17 +1,6 @@
-import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
 import { ProfileForm } from '@/components/auth/profile-form'
 
 export default async function SettingsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) {
-    redirect('/auth/sign-in')
-  }
-
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
