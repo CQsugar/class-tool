@@ -86,8 +86,23 @@ export const navGroups: NavGroup[] = [
       },
       {
         title: '积分商城',
-        url: '/store',
+        url: '#',
         icon: Store,
+        isActive: true,
+        items: [
+          {
+            title: '商品管理',
+            url: '/store',
+          },
+          {
+            title: '兑换记录',
+            url: '/store/redemptions',
+          },
+          {
+            title: '商城统计',
+            url: '/store/stats',
+          },
+        ],
       },
     ],
   },
