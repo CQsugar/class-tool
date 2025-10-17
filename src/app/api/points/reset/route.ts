@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { batchResetPointsSchema, ResetMode } from '@/lib/validations/point-reset'
+import { headers } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
 
 // POST /api/points/reset - 批量重置积分
 export async function POST(request: NextRequest) {
