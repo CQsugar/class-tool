@@ -3,6 +3,7 @@
 import { PointRuleColumn, getPointRuleColumns } from '@/components/points/point-rule-columns'
 import { PointRuleDataTable } from '@/components/points/point-rule-data-table'
 import { PointRuleFormDialog } from '@/components/points/point-rule-form-dialog'
+import { ResetPointsDialog } from '@/components/points/reset-points-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PointType } from '@prisma/client'
-import { Plus } from 'lucide-react'
+import { Plus, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -27,6 +28,7 @@ export default function PointsPage() {
   const [editingRule, setEditingRule] = useState<PointRuleColumn | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [ruleToDelete, setRuleToDelete] = useState<PointRuleColumn | null>(null)
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
 
   // 分页和过滤状态
   const [currentPage, setCurrentPage] = useState(1)
@@ -138,10 +140,20 @@ export default function PointsPage() {
               <CardTitle>积分规则管理</CardTitle>
               <CardDescription>管理班级积分加减规则和分类</CardDescription>
             </div>
-            <Button onClick={() => setFormOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              添加规则
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setResetDialogOpen(true)}
+                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                重置积分
+              </Button>
+              <Button onClick={() => setFormOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                添加规则
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -210,6 +222,16 @@ export default function PointsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 积分重置对话框 */}
+      <ResetPointsDialog
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        onSuccess={() => {
+          toast.success('积分重置成功')
+          setResetDialogOpen(false)
+        }}
+      />
     </div>
   )
 }
