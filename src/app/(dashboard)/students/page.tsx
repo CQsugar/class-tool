@@ -1,18 +1,18 @@
 'use client'
 
 import { Student } from '@prisma/client'
-import { Archive, BookCheck, Download, Plus, Upload, Zap, Tag } from 'lucide-react'
+import { Archive, BookCheck, Download, Plus, Tag, Upload, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { ApplyRuleDialog } from '@/components/points/apply-rule-dialog'
 import { QuickPointsDialog } from '@/components/points/quick-points-dialog'
+import { BatchTagDialog } from '@/components/students/batch-tag-dialog'
 import { createStudentColumns } from '@/components/students/columns'
 import { DataTable } from '@/components/students/data-table'
 import { ExportStudentDialog } from '@/components/students/export-student-dialog'
 import { ImportStudentDialog } from '@/components/students/import-student-dialog'
 import { StudentFormDialog } from '@/components/students/student-form-dialog'
-import { BatchTagDialog } from '@/components/students/batch-tag-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
