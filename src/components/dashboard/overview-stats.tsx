@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, TrendingUp, ShoppingCart, ArrowUp, ArrowDown } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ArrowDown, ArrowUp, ShoppingCart, TrendingUp, Users } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface OverviewData {
   students: {

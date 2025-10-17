@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -9,20 +10,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  BarChart3,
-  Package,
-  Gift,
-  Crown,
-  TrendingUp,
-  AlertTriangle,
-  Users,
-  ShoppingCart,
-  Coins,
-} from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  AlertTriangle,
+  BarChart3,
+  Coins,
+  Crown,
+  Gift,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface StoreStats {
   overview: {

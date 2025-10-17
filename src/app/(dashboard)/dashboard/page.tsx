@@ -1,9 +1,9 @@
-import { Metadata } from 'next'
+import { Leaderboard } from '@/components/dashboard/leaderboard'
 import { OverviewStats } from '@/components/dashboard/overview-stats'
 import { QuickPointsPanel } from '@/components/dashboard/quick-points-panel'
-import { Leaderboard } from '@/components/dashboard/leaderboard'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
