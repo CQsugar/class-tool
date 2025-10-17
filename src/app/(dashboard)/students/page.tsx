@@ -1,7 +1,7 @@
 'use client'
 
 import { Student } from '@prisma/client'
-import { Archive, BookCheck, Download, Plus, Upload, Zap } from 'lucide-react'
+import { Archive, BookCheck, Download, Plus, Upload, Zap, Tag } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -12,8 +12,15 @@ import { DataTable } from '@/components/students/data-table'
 import { ExportStudentDialog } from '@/components/students/export-student-dialog'
 import { ImportStudentDialog } from '@/components/students/import-student-dialog'
 import { StudentFormDialog } from '@/components/students/student-form-dialog'
+import { BatchTagDialog } from '@/components/students/batch-tag-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
@@ -24,6 +31,8 @@ export default function StudentsPage() {
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
   const [quickPointsOpen, setQuickPointsOpen] = useState(false)
   const [applyRuleOpen, setApplyRuleOpen] = useState(false)
+  const [batchTagOpen, setBatchTagOpen] = useState(false)
+  const [tagMode, setTagMode] = useState<'add' | 'remove'>('add')
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
 
   // 获取学生列表
@@ -144,6 +153,31 @@ export default function StudentsPage() {
     setSelectedStudents([])
   }
 
+  // 批量添加标签
+  const handleBatchAddTag = () => {
+    if (selectedStudents.length === 0) {
+      toast.warning('请先选择学生')
+      return
+    }
+    setTagMode('add')
+    setBatchTagOpen(true)
+  }
+
+  // 批量移除标签
+  const handleBatchRemoveTag = () => {
+    if (selectedStudents.length === 0) {
+      toast.warning('请先选择学生')
+      return
+    }
+    setTagMode('remove')
+    setBatchTagOpen(true)
+  }
+
+  // 标签操作成功后的回调
+  const handleTagSuccess = () => {
+    fetchStudents()
+  }
+
   // 导出Excel
   const handleExport = () => {
     setExportDialogOpen(true)
@@ -207,6 +241,18 @@ export default function StudentsPage() {
                   <BookCheck className="h-4 w-4" />
                   应用规则 ({selectedStudents.length})
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <Tag className="h-4 w-4" />
+                      标签操作 ({selectedStudents.length})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleBatchAddTag}>添加标签</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleBatchRemoveTag}>移除标签</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button variant="outline" onClick={handleBatchArchive} className="gap-2">
                   <Archive className="h-4 w-4" />
                   批量归档 ({selectedStudents.length})
@@ -265,6 +311,15 @@ export default function StudentsPage() {
         selectedStudentIds={selectedStudents.map(s => s.id)}
         studentNames={selectedStudents.map(s => s.name)}
         onSuccess={handlePointsSuccess}
+      />
+
+      {/* 批量标签操作对话框 */}
+      <BatchTagDialog
+        open={batchTagOpen}
+        onOpenChange={setBatchTagOpen}
+        studentIds={selectedStudents.map(s => s.id)}
+        mode={tagMode}
+        onSuccess={handleTagSuccess}
       />
     </div>
   )

@@ -51,6 +51,7 @@
 - `src/lib/validations/point-rule.ts` - 积分规则验证Schema (规则CRUD、归档等)
 - `src/lib/validations/point-record.ts` - 积分记录验证Schema (快速加减分、应用规则等)
 - `src/lib/validations/student-group.ts` - 学生分组验证Schema (分组CRUD、成员管理等)
+- `src/lib/validations/student-tag.ts` - 学生标签验证Schema (标签CRUD、批量操作等)
 - `src/app/api/points/rules/route.ts` - 积分规则列表和创建API
 - `src/app/api/points/rules/[id]/route.ts` - 单个积分规则CRUD API
 - `src/app/api/points/quick/route.ts` - 快速加减分API
@@ -61,9 +62,16 @@
 - `src/app/api/students/groups/[id]/route.ts` - 单个分组CRUD API
 - `src/app/api/students/groups/members/add/route.ts` - 批量添加分组成员API
 - `src/app/api/students/groups/members/remove/route.ts` - 批量移除分组成员API
+- `src/app/api/students/tags/route.ts` - 学生标签列表和创建API
+- `src/app/api/students/tags/[id]/route.ts` - 单个标签CRUD API
+- `src/app/api/students/tags/students/add/route.ts` - 批量添加学生到标签API
+- `src/app/api/students/tags/students/remove/route.ts` - 批量从标签移除学生API
+- `src/app/api/students/tags/batch/add/route.ts` - 批量为学生添加标签API
+- `src/app/api/students/tags/batch/remove/route.ts` - 批量移除学生标签API
 - `src/app/(dashboard)/points/page.tsx` - 积分规则管理页面
 - `src/app/(dashboard)/points/records/page.tsx` - 积分记录查询页面
 - `src/app/(dashboard)/students/groups/page.tsx` - 学生分组管理页面
+- `src/app/(dashboard)/students/tags/page.tsx` - 学生标签管理页面
 - `src/components/points/point-rule-columns.tsx` - 积分规则表格列定义
 - `src/components/points/point-rule-form-dialog.tsx` - 积分规则表单对话框
 - `src/components/points/point-rule-data-table.tsx` - 积分规则数据表格
@@ -76,6 +84,11 @@
 - `src/components/students/student-group-form-dialog.tsx` - 学生分组表单对话框(带颜色选择器)
 - `src/components/students/student-group-data-table.tsx` - 学生分组数据表格
 - `src/components/students/group-members-dialog.tsx` - 分组成员管理对话框
+- `src/components/students/student-tag-columns.tsx` - 学生标签表格列定义
+- `src/components/students/student-tag-form-dialog.tsx` - 学生标签表单对话框(带颜色选择器)
+- `src/components/students/student-tag-data-table.tsx` - 学生标签数据表格
+- `src/components/students/tag-students-dialog.tsx` - 标签学生管理对话框
+- `src/components/students/batch-tag-dialog.tsx` - 批量标签操作对话框
 - `prisma/schema.prisma` - 数据库模型定义
 - `prisma/seed.ts` - 数据库种子文件
 - `middleware.ts` - Next.js中间件，包含安全头设置和安全监控
@@ -123,7 +136,7 @@
   - [x] 4.3 实现快速加减分功能和界面 ✅
   - [x] 4.4 开发积分记录查询和展示 ✅
   - [x] 4.5 实现学生分组管理功能 ✅
-  - [ ] 4.6 开发标签系统和批量操作
+  - [x] 4.6 开发标签系统和批量操作 ✅
   - [ ] 4.7 实现积分重置功能(含多重确认)
   - [ ] 4.8 创建积分规则模板系统
 
