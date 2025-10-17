@@ -40,3 +40,6 @@ coverage/
 *.temp
 
 *-lock.yaml
+
+# shadcn/ui generated files
+src/components/ui/

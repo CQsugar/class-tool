@@ -14,8 +14,25 @@
 - `src/app/(dashboard)/points/page.tsx` - 积分系统管理页面
 - `src/app/(dashboard)/store/page.tsx` - 积分商城页面
 - `src/app/(dashboard)/archive/page.tsx` - 数据归档页面
+- `src/app/api/students/route.ts` - 学生列表和创建API (GET支持分页、搜索、筛选)
+- `src/app/api/students/[id]/route.ts` - 单个学生CRUD API (GET/PATCH/DELETE)
+- `src/app/api/students/batch/archive/route.ts` - 批量归档/恢复学生API
+- `src/app/api/students/batch/delete/route.ts` - 批量永久删除学生API
+- `src/app/api/students/batch/import/route.ts` - 批量导入学生API（Excel）
+- `src/app/(dashboard)/students/page.tsx` - 学生列表页面（带数据表格和分页）
+- `src/components/students/data-table.tsx` - 可复用的数据表格组件（使用TanStack Table）
+- `src/components/students/columns.tsx` - 学生表格列定义（支持排序、筛选、操作）
+- `src/components/students/student-form-dialog.tsx` - 学生信息表单对话框（新增/编辑）
+- `src/components/students/import-student-dialog.tsx` - Excel批量导入对话框（带模板下载和数据验证）
+- `src/components/students/export-student-dialog.tsx` - Excel导出对话框（支持全部/选中/筛选导出）
 - `src/components/ui/` - shadcn/ui组件目录
 - `src/components/ui/sonner.tsx` - Sonner toast通知组件
+- `src/components/ui/pagination.tsx` - 分页组件
+- `src/components/ui/checkbox.tsx` - 复选框组件
+- `src/components/ui/select.tsx` - 下拉选择组件
+- `src/components/ui/textarea.tsx` - 多行文本输入组件
+- `src/components/ui/alert.tsx` - 警告提示组件
+- `src/components/ui/radio-group.tsx` - 单选按钮组组件
 - `src/components/dashboard/` - 自定义仪表板组件
 - `src/components/forms/` - 表单组件
 - `src/components/auth/profile-form.tsx` - 用户设置表单组件，使用better-auth-ui
@@ -25,9 +42,12 @@
 - `src/components/layout/dashboard-header.tsx` - 更新后的Dashboard头部组件，集成用户认证
 - `src/lib/auth.ts` - Better Auth配置文件，包含multi-session和安全配置
 - `src/lib/auth-client.ts` - Better Auth客户端配置，包含multi-session支持
+- `src/lib/auth-utils.ts` - 认证工具函数 (getSession, requireAuth, isAuthenticated)
 - `src/lib/prisma.ts` - Prisma客户端配置
 - `src/lib/utils.ts` - 工具函数
+- `src/lib/excel-export.ts` - Excel导出工具函数 (支持导出全部/选中学生)
 - `src/lib/validations/` - 数据验证schema
+- `src/lib/validations/student.ts` - 学生信息验证Schema (包含创建、更新、查询、批量操作等)
 - `prisma/schema.prisma` - 数据库模型定义
 - `prisma/seed.ts` - 数据库种子文件
 - `middleware.ts` - Next.js中间件，包含安全头设置和安全监控
@@ -60,14 +80,14 @@
   - [x] 2.6 添加会话管理和安全配置
 
 - [ ] 3.0 学生信息管理模块开发
-  - [ ] 3.1 设计学生信息数据模型和关系
-  - [ ] 3.2 创建学生CRUD API路由
-  - [ ] 3.3 实现学生列表页面和分页功能
-  - [ ] 3.4 开发学生信息表单(新增/编辑)
-  - [ ] 3.5 实现批量Excel导入功能
-  - [ ] 3.6 开发Excel导出功能
-  - [ ] 3.7 添加数据验证和错误处理
-  - [ ] 3.8 实现搜索和筛选功能
+  - [x] 3.1 设计学生信息数据模型和关系
+  - [x] 3.2 创建学生CRUD API路由
+  - [x] 3.3 实现学生列表页面和分页功能
+  - [x] 3.4 开发学生信息表单(新增/编辑)
+  - [x] 3.5 实现批量Excel导入功能
+  - [x] 3.6 开发Excel导出功能
+  - [x] 3.7 添加数据验证和错误处理
+  - [x] 3.8 实现搜索和筛选功能
 
 - [ ] 4.0 积分系统核心功能开发
   - [ ] 4.1 设计积分规则和记录数据模型
