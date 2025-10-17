@@ -48,6 +48,34 @@
 - `src/lib/excel-export.ts` - Excel导出工具函数 (支持导出全部/选中学生)
 - `src/lib/validations/` - 数据验证schema
 - `src/lib/validations/student.ts` - 学生信息验证Schema (包含创建、更新、查询、批量操作等)
+- `src/lib/validations/point-rule.ts` - 积分规则验证Schema (规则CRUD、归档等)
+- `src/lib/validations/point-record.ts` - 积分记录验证Schema (快速加减分、应用规则等)
+- `src/lib/validations/student-group.ts` - 学生分组验证Schema (分组CRUD、成员管理等)
+- `src/app/api/points/rules/route.ts` - 积分规则列表和创建API
+- `src/app/api/points/rules/[id]/route.ts` - 单个积分规则CRUD API
+- `src/app/api/points/quick/route.ts` - 快速加减分API
+- `src/app/api/points/apply-rule/route.ts` - 应用积分规则API
+- `src/app/api/points/records/route.ts` - 积分记录查询API (支持分页、筛选)
+- `src/app/api/points/records/stats/route.ts` - 积分统计API
+- `src/app/api/students/groups/route.ts` - 学生分组列表和创建API
+- `src/app/api/students/groups/[id]/route.ts` - 单个分组CRUD API
+- `src/app/api/students/groups/members/add/route.ts` - 批量添加分组成员API
+- `src/app/api/students/groups/members/remove/route.ts` - 批量移除分组成员API
+- `src/app/(dashboard)/points/page.tsx` - 积分规则管理页面
+- `src/app/(dashboard)/points/records/page.tsx` - 积分记录查询页面
+- `src/app/(dashboard)/students/groups/page.tsx` - 学生分组管理页面
+- `src/components/points/point-rule-columns.tsx` - 积分规则表格列定义
+- `src/components/points/point-rule-form-dialog.tsx` - 积分规则表单对话框
+- `src/components/points/point-rule-data-table.tsx` - 积分规则数据表格
+- `src/components/points/quick-points-dialog.tsx` - 快速加减分对话框
+- `src/components/points/apply-rule-dialog.tsx` - 应用规则对话框
+- `src/components/points/point-record-columns.tsx` - 积分记录表格列定义
+- `src/components/points/point-record-data-table.tsx` - 积分记录数据表格
+- `src/components/points/point-record-stats.tsx` - 积分统计卡片组件
+- `src/components/students/student-group-columns.tsx` - 学生分组表格列定义
+- `src/components/students/student-group-form-dialog.tsx` - 学生分组表单对话框(带颜色选择器)
+- `src/components/students/student-group-data-table.tsx` - 学生分组数据表格
+- `src/components/students/group-members-dialog.tsx` - 分组成员管理对话框
 - `prisma/schema.prisma` - 数据库模型定义
 - `prisma/seed.ts` - 数据库种子文件
 - `middleware.ts` - Next.js中间件，包含安全头设置和安全监控
@@ -90,11 +118,11 @@
   - [x] 3.8 实现搜索和筛选功能
 
 - [ ] 4.0 积分系统核心功能开发
-  - [ ] 4.1 设计积分规则和记录数据模型
-  - [ ] 4.2 创建积分规则管理API和UI
-  - [ ] 4.3 实现快速加减分功能和界面
-  - [ ] 4.4 开发积分记录查询和展示
-  - [ ] 4.5 实现学生分组管理功能
+  - [x] 4.1 设计积分规则和记录数据模型 ✅
+  - [x] 4.2 创建积分规则管理API和UI ✅
+  - [x] 4.3 实现快速加减分功能和界面 ✅
+  - [x] 4.4 开发积分记录查询和展示 ✅
+  - [x] 4.5 实现学生分组管理功能 ✅
   - [ ] 4.6 开发标签系统和批量操作
   - [ ] 4.7 实现积分重置功能(含多重确认)
   - [ ] 4.8 创建积分规则模板系统

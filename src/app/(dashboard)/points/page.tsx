@@ -1,0 +1,215 @@
+'use client'
+
+import { PointRuleColumn, getPointRuleColumns } from '@/components/points/point-rule-columns'
+import { PointRuleDataTable } from '@/components/points/point-rule-data-table'
+import { PointRuleFormDialog } from '@/components/points/point-rule-form-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PointType } from '@prisma/client'
+import { Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
+export default function PointsPage() {
+  const [rules, setRules] = useState<PointRuleColumn[]>([])
+  const [loading, setLoading] = useState(true)
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingRule, setEditingRule] = useState<PointRuleColumn | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [ruleToDelete, setRuleToDelete] = useState<PointRuleColumn | null>(null)
+
+  // 分页和过滤状态
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [pageCount, setPageCount] = useState(1)
+  const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState<PointType | 'all'>('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [activeFilter, setActiveFilter] = useState('all')
+  const [categories, setCategories] = useState<string[]>([])
+
+  // 加载规则列表
+  const loadRules = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        pageSize: pageSize.toString(),
+      })
+
+      if (search) params.append('search', search)
+      if (typeFilter !== 'all') params.append('type', typeFilter)
+      if (categoryFilter !== 'all') params.append('category', categoryFilter)
+      if (activeFilter !== 'all') params.append('isActive', activeFilter)
+
+      const response = await fetch(`/api/points/rules?${params}`)
+      if (!response.ok) throw new Error('加载规则列表失败')
+
+      const data = await response.json()
+      setRules(data.rules)
+      setPageCount(data.pagination.pageCount)
+
+      // 提取所有分类（用于过滤器）
+      const uniqueCategories = Array.from(
+        new Set(data.rules.map((r: PointRuleColumn) => r.category).filter(Boolean))
+      ) as string[]
+      setCategories(uniqueCategories)
+    } catch (error) {
+      console.error('Failed to load rules:', error)
+      toast.error('加载规则列表失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadRules()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, search, typeFilter, categoryFilter, activeFilter])
+
+  // 处理编辑
+  const handleEdit = (rule: PointRuleColumn) => {
+    setEditingRule(rule)
+    setFormOpen(true)
+  }
+
+  // 处理删除
+  const handleDelete = (rule: PointRuleColumn) => {
+    setRuleToDelete(rule)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!ruleToDelete) return
+
+    try {
+      const response = await fetch(`/api/points/rules/${ruleToDelete.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) throw new Error('删除规则失败')
+
+      toast.success('规则已删除')
+      loadRules()
+    } catch (error) {
+      console.error('Failed to delete rule:', error)
+      toast.error('删除规则失败')
+    } finally {
+      setDeleteDialogOpen(false)
+      setRuleToDelete(null)
+    }
+  }
+
+  // 处理表单提交
+  const handleFormSuccess = () => {
+    setFormOpen(false)
+    setEditingRule(null)
+    loadRules()
+  }
+
+  const handleFormOpenChange = (open: boolean) => {
+    setFormOpen(open)
+    if (!open) {
+      setEditingRule(null)
+    }
+  }
+
+  const columns = getPointRuleColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+  })
+
+  return (
+    <div className="container mx-auto py-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>积分规则管理</CardTitle>
+              <CardDescription>管理班级积分加减规则和分类</CardDescription>
+            </div>
+            <Button onClick={() => setFormOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              添加规则
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex h-64 items-center justify-center">
+              <div className="text-muted-foreground">加载中...</div>
+            </div>
+          ) : (
+            <PointRuleDataTable
+              columns={columns}
+              data={rules}
+              pageCount={pageCount}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={size => {
+                setPageSize(size)
+                setCurrentPage(1)
+              }}
+              onSearch={value => {
+                setSearch(value)
+                setCurrentPage(1)
+              }}
+              onTypeFilter={type => {
+                setTypeFilter(type)
+                setCurrentPage(1)
+              }}
+              onCategoryFilter={category => {
+                setCategoryFilter(category)
+                setCurrentPage(1)
+              }}
+              onActiveFilter={active => {
+                setActiveFilter(active)
+                setCurrentPage(1)
+              }}
+              categories={categories}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 添加/编辑对话框 */}
+      <PointRuleFormDialog
+        open={formOpen}
+        onOpenChange={handleFormOpenChange}
+        rule={editingRule}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* 删除确认对话框 */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除规则 &quot;{ruleToDelete?.name}&quot; 吗？
+              <br />
+              此操作将移除规则，但不会删除已有的积分记录。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive">
+              删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+}

@@ -1,10 +1,12 @@
 'use client'
 
 import { Student } from '@prisma/client'
-import { Archive, Download, Plus, Upload } from 'lucide-react'
+import { Archive, BookCheck, Download, Plus, Upload, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+import { ApplyRuleDialog } from '@/components/points/apply-rule-dialog'
+import { QuickPointsDialog } from '@/components/points/quick-points-dialog'
 import { createStudentColumns } from '@/components/students/columns'
 import { DataTable } from '@/components/students/data-table'
 import { ExportStudentDialog } from '@/components/students/export-student-dialog'
@@ -16,10 +18,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedStudents] = useState<Student[]>([])
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
+  const [quickPointsOpen, setQuickPointsOpen] = useState(false)
+  const [applyRuleOpen, setApplyRuleOpen] = useState(false)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
 
   // 获取学生列表
@@ -116,6 +120,30 @@ export default function StudentsPage() {
     }
   }
 
+  // 快速加减分
+  const handleQuickPoints = () => {
+    if (selectedStudents.length === 0) {
+      toast.warning('请先选择学生')
+      return
+    }
+    setQuickPointsOpen(true)
+  }
+
+  // 应用规则
+  const handleApplyRule = () => {
+    if (selectedStudents.length === 0) {
+      toast.warning('请先选择学生')
+      return
+    }
+    setApplyRuleOpen(true)
+  }
+
+  // 积分操作成功后的回调
+  const handlePointsSuccess = () => {
+    fetchStudents()
+    setSelectedStudents([])
+  }
+
   // 导出Excel
   const handleExport = () => {
     setExportDialogOpen(true)
@@ -170,10 +198,20 @@ export default function StudentsPage() {
               <CardDescription>共 {students.length} 名学生</CardDescription>
             </div>
             {selectedStudents.length > 0 && (
-              <Button variant="outline" onClick={handleBatchArchive} className="gap-2">
-                <Archive className="h-4 w-4" />
-                批量归档 ({selectedStudents.length})
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleQuickPoints} className="gap-2">
+                  <Zap className="h-4 w-4" />
+                  快速加减分 ({selectedStudents.length})
+                </Button>
+                <Button variant="outline" onClick={handleApplyRule} className="gap-2">
+                  <BookCheck className="h-4 w-4" />
+                  应用规则 ({selectedStudents.length})
+                </Button>
+                <Button variant="outline" onClick={handleBatchArchive} className="gap-2">
+                  <Archive className="h-4 w-4" />
+                  批量归档 ({selectedStudents.length})
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -183,6 +221,7 @@ export default function StudentsPage() {
             data={students}
             searchKey="name"
             searchPlaceholder="搜索学生姓名..."
+            onSelectionChange={setSelectedStudents}
           />
         </CardContent>
       </Card>
@@ -208,6 +247,24 @@ export default function StudentsPage() {
         onOpenChange={setExportDialogOpen}
         students={students}
         selectedStudents={selectedStudents}
+      />
+
+      {/* 快速加减分对话框 */}
+      <QuickPointsDialog
+        open={quickPointsOpen}
+        onOpenChange={setQuickPointsOpen}
+        selectedStudentIds={selectedStudents.map(s => s.id)}
+        studentNames={selectedStudents.map(s => s.name)}
+        onSuccess={handlePointsSuccess}
+      />
+
+      {/* 应用规则对话框 */}
+      <ApplyRuleDialog
+        open={applyRuleOpen}
+        onOpenChange={setApplyRuleOpen}
+        selectedStudentIds={selectedStudents.map(s => s.id)}
+        studentNames={selectedStudents.map(s => s.name)}
+        onSuccess={handlePointsSuccess}
       />
     </div>
   )
