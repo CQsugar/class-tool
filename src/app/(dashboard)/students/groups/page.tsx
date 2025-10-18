@@ -1,6 +1,5 @@
 'use client'
 
-import { GroupMembersDialog } from '@/components/students/group-members-dialog'
 import {
   getStudentGroupColumns,
   type StudentGroupColumn,
@@ -50,9 +49,7 @@ export default function StudentGroupsPage() {
     totalMembers: 0,
   })
   const [showFormDialog, setShowFormDialog] = useState(false)
-  const [showMembersDialog, setShowMembersDialog] = useState(false)
   const [editingGroup, setEditingGroup] = useState<StudentGroup | null>(null)
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [groupToDelete, setGroupToDelete] = useState<StudentGroup | null>(null)
 
@@ -140,11 +137,6 @@ export default function StudentGroupsPage() {
     setShowFormDialog(true)
   }
 
-  const handleViewMembers = (group: StudentGroupColumn) => {
-    setSelectedGroupId(group.id)
-    setShowMembersDialog(true)
-  }
-
   const handleDeleteClick = (group: StudentGroupColumn) => {
     // 从groups数组找到完整的group对象
     const fullGroup = groups.find(g => g.id === group.id)
@@ -182,15 +174,10 @@ export default function StudentGroupsPage() {
     loadGroups()
   }
 
-  const handleMembersSuccess = () => {
-    loadGroups()
-  }
-
   // 增强的列定义，添加操作回调
   const enhancedColumns = getStudentGroupColumns({
     onEdit: handleEdit,
     onDelete: handleDeleteClick,
-    onViewMembers: handleViewMembers,
   })
 
   return (
@@ -289,14 +276,6 @@ export default function StudentGroupsPage() {
         onOpenChange={setShowFormDialog}
         group={editingGroup || undefined}
         onSuccess={handleFormSuccess}
-      />
-
-      {/* 成员管理对话框 */}
-      <GroupMembersDialog
-        open={showMembersDialog}
-        onOpenChange={setShowMembersDialog}
-        groupId={selectedGroupId}
-        onSuccess={handleMembersSuccess}
       />
 
       {/* 删除确认对话框 */}

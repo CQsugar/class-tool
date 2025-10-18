@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ColumnDef } from '@tanstack/react-table'
-import { MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 
 export interface StudentGroupColumn {
   id: string
@@ -26,13 +26,11 @@ export interface StudentGroupColumn {
 interface StudentGroupColumnsProps {
   onEdit: (group: StudentGroupColumn) => void
   onDelete: (group: StudentGroupColumn) => void
-  onViewMembers: (group: StudentGroupColumn) => void
 }
 
 export const getStudentGroupColumns = ({
   onEdit,
   onDelete,
-  onViewMembers,
 }: StudentGroupColumnsProps): ColumnDef<StudentGroupColumn>[] => [
   {
     accessorKey: 'name',
@@ -75,8 +73,7 @@ export const getStudentGroupColumns = ({
     cell: ({ row }) => {
       const count = row.original._count.members
       return (
-        <div className="flex items-center gap-2">
-          <Users className="text-muted-foreground h-4 w-4" />
+        <div className="flex items-center gap-1">
           <span className="font-medium">{count}</span>
           <span className="text-muted-foreground text-sm">人</span>
         </div>
@@ -106,10 +103,6 @@ export const getStudentGroupColumns = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onViewMembers(group)}>
-              <Users className="mr-2 h-4 w-4" />
-              查看成员
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(group)}>
               <Pencil className="mr-2 h-4 w-4" />
               编辑

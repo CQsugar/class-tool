@@ -1,12 +1,13 @@
 'use client'
 
 import { Student } from '@prisma/client'
-import { Archive, BookCheck, Download, Plus, Tag, Upload, Zap } from 'lucide-react'
+import { Archive, BookCheck, Download, Plus, Tag, Upload, Users, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { ApplyRuleDialog } from '@/components/points/apply-rule-dialog'
 import { QuickPointsDialog } from '@/components/points/quick-points-dialog'
+import { BatchGroupDialog } from '@/components/students/batch-group-dialog'
 import { BatchTagDialog } from '@/components/students/batch-tag-dialog'
 import { createStudentColumns } from '@/components/students/columns'
 import { DataTable } from '@/components/students/data-table'
@@ -53,6 +54,8 @@ export default function StudentsPage() {
   const [applyRuleOpen, setApplyRuleOpen] = useState(false)
   const [batchTagOpen, setBatchTagOpen] = useState(false)
   const [tagMode, setTagMode] = useState<'add' | 'remove'>('add')
+  const [batchGroupOpen, setBatchGroupOpen] = useState(false)
+  const [groupMode, setGroupMode] = useState<'add' | 'remove'>('add')
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null)
@@ -293,6 +296,31 @@ export default function StudentsPage() {
     fetchStudents()
   }
 
+  // 批量添加分组
+  const handleBatchAddGroup = () => {
+    if (selectedStudents.length === 0) {
+      toast.warning('请先选择学生')
+      return
+    }
+    setGroupMode('add')
+    setBatchGroupOpen(true)
+  }
+
+  // 批量移除分组
+  const handleBatchRemoveGroup = () => {
+    if (selectedStudents.length === 0) {
+      toast.warning('请先选择学生')
+      return
+    }
+    setGroupMode('remove')
+    setBatchGroupOpen(true)
+  }
+
+  // 分组操作成功后的回调
+  const handleGroupSuccess = () => {
+    fetchStudents()
+  }
+
   // 导出Excel
   const handleExport = () => {
     setExportDialogOpen(true)
@@ -381,6 +409,18 @@ export default function StudentsPage() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleBatchAddTag}>添加标签</DropdownMenuItem>
                     <DropdownMenuItem onClick={handleBatchRemoveTag}>移除标签</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <Users className="h-4 w-4" />
+                      分组操作 ({selectedStudents.length})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleBatchAddGroup}>添加分组</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleBatchRemoveGroup}>移除分组</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button variant="outline" onClick={handleBatchArchive} className="gap-2">
@@ -521,6 +561,15 @@ export default function StudentsPage() {
         studentIds={selectedStudents.map(s => s.id)}
         mode={tagMode}
         onSuccess={handleTagSuccess}
+      />
+
+      {/* 批量分组操作对话框 */}
+      <BatchGroupDialog
+        open={batchGroupOpen}
+        onOpenChange={setBatchGroupOpen}
+        studentIds={selectedStudents.map(s => s.id)}
+        mode={groupMode}
+        onSuccess={handleGroupSuccess}
       />
 
       {/* 删除确认对话框 */}
