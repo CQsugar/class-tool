@@ -24,6 +24,8 @@ export type PointRuleColumn = Pick<
   | 'createdAt'
   | 'updatedAt'
   | 'userId'
+  | 'archiveId'
+  | 'archivedAt'
 >
 
 interface PointRuleColumnsProps {

@@ -171,3 +171,12 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+
+/* 随机点名和计时器动画延迟 */
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}

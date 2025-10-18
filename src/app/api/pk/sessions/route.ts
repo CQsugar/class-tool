@@ -36,6 +36,18 @@ export async function POST(request: NextRequest) {
 
     const { mode, topic, rewardPoints, duration, studentIds, groupIds } = result.data
 
+    // 自动结束当前用户所有进行中的PK会话
+    await prisma.pKSession.updateMany({
+      where: {
+        userId: user.id,
+        status: 'ONGOING',
+      },
+      data: {
+        status: 'CANCELLED',
+        finishedAt: new Date(),
+      },
+    })
+
     // 根据不同模式验证参数
     if (mode === 'INDIVIDUAL') {
       if (!studentIds || studentIds.length !== 2) {

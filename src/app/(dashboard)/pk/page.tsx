@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Award, Loader2, Maximize2, Minimize2, Swords, Trophy, Users } from 'lucide-react'
+import { Award, Loader2, Maximize2, Minimize2, Swords, Trophy, User, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -64,9 +64,56 @@ export default function PKPage() {
   const [isStarting, setIsStarting] = useState(false)
   const [rewardPoints, setRewardPoints] = useState('10')
   const [pkSession, setPKSession] = useState<PKSession | null>(null)
-  const [_selectedStudents, _setSelectedStudents] = useState<string[]>([])
-  const [_selectedGroups, _setSelectedGroups] = useState<string[]>([])
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([])
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([])
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [students, setStudents] = useState<Student[]>([])
+  const [groups, setGroups] = useState<Group[]>([])
+  const [loadingData, setLoadingData] = useState(false)
+
+  // 加载学生列表（用于个人PK）
+  useEffect(() => {
+    if (mode === 'INDIVIDUAL') {
+      loadStudents()
+    }
+  }, [mode])
+
+  // 加载分组列表（用于分组PK）
+  useEffect(() => {
+    if (mode === 'GROUP') {
+      loadGroups()
+    }
+  }, [mode])
+
+  const loadStudents = async () => {
+    try {
+      setLoadingData(true)
+      const response = await fetch('/api/students?limit=100')
+      if (!response.ok) throw new Error('Failed to load students')
+      const data = await response.json()
+      setStudents(data.data || [])
+    } catch (error) {
+      console.error('Failed to load students:', error)
+      toast.error('加载学生列表失败')
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  const loadGroups = async () => {
+    try {
+      setLoadingData(true)
+      const response = await fetch('/api/students/groups?limit=100')
+      if (!response.ok) throw new Error('Failed to load groups')
+      const data = await response.json()
+      setGroups(data.data || [])
+    } catch (error) {
+      console.error('Failed to load groups:', error)
+      toast.error('加载分组列表失败')
+    } finally {
+      setLoadingData(false)
+    }
+  }
 
   // 全屏切换
   const toggleFullscreen = () => {
@@ -108,17 +155,17 @@ export default function PKPage() {
       }
 
       if (mode === 'INDIVIDUAL') {
-        if (_selectedStudents.length !== 2) {
+        if (selectedStudents.length !== 2) {
           toast.error('请选择2名学生')
           return
         }
-        body.studentIds = _selectedStudents
+        body.studentIds = selectedStudents
       } else if (mode === 'GROUP') {
-        if (_selectedGroups.length !== 2) {
+        if (selectedGroups.length !== 2) {
           toast.error('请选择2个分组')
           return
         }
-        body.groupIds = _selectedGroups
+        body.groupIds = selectedGroups
       }
 
       const response = await fetch('/api/pk/sessions', {
@@ -418,15 +465,104 @@ export default function PKPage() {
                 </TabsContent>
 
                 <TabsContent value="INDIVIDUAL" className="space-y-4">
-                  <p className="text-muted-foreground text-sm">
-                    手动选择2名学生进行1v1对战 (功能开发中...)
-                  </p>
+                  <p className="text-muted-foreground mb-4 text-sm">手动选择2名学生进行1v1对战</p>
+                  {loadingData ? (
+                    <div className="text-muted-foreground flex items-center justify-center py-8">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      加载中...
+                    </div>
+                  ) : students.length === 0 ? (
+                    <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
+                      暂无学生数据
+                    </div>
+                  ) : (
+                    <div className="grid max-h-[300px] grid-cols-2 gap-2 overflow-y-auto rounded-lg border p-4 md:grid-cols-3">
+                      {students.map(student => {
+                        const isSelected = selectedStudents.includes(student.id)
+                        const isDisabled = selectedStudents.length >= 2 && !isSelected
+                        return (
+                          <Button
+                            key={student.id}
+                            variant={isSelected ? 'default' : 'outline'}
+                            size="sm"
+                            disabled={isDisabled}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedStudents(prev => prev.filter(id => id !== student.id))
+                              } else if (selectedStudents.length < 2) {
+                                setSelectedStudents(prev => [...prev, student.id])
+                              }
+                            }}
+                            className="justify-start"
+                          >
+                            <User className="mr-2 h-4 w-4" />
+                            {student.name}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {selectedStudents.length > 0 && (
+                    <div className="bg-muted flex items-center justify-between rounded-lg p-3">
+                      <span className="text-sm">已选择: {selectedStudents.length}/2</span>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedStudents([])}>
+                        清空选择
+                      </Button>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="GROUP" className="space-y-4">
-                  <p className="text-muted-foreground text-sm">
-                    选择2个分组进行团队对战 (功能开发中...)
-                  </p>
+                  <p className="text-muted-foreground mb-4 text-sm">选择2个分组进行团队对战</p>
+                  {loadingData ? (
+                    <div className="text-muted-foreground flex items-center justify-center py-8">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      加载中...
+                    </div>
+                  ) : groups.length === 0 ? (
+                    <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
+                      暂无分组数据
+                    </div>
+                  ) : (
+                    <div className="grid max-h-[300px] grid-cols-1 gap-2 overflow-y-auto rounded-lg border p-4 md:grid-cols-2">
+                      {groups.map(group => {
+                        const isSelected = selectedGroups.includes(group.id)
+                        const isDisabled = selectedGroups.length >= 2 && !isSelected
+                        return (
+                          <Button
+                            key={group.id}
+                            variant={isSelected ? 'default' : 'outline'}
+                            size="sm"
+                            disabled={isDisabled}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedGroups(prev => prev.filter(id => id !== group.id))
+                              } else if (selectedGroups.length < 2) {
+                                setSelectedGroups(prev => [...prev, group.id])
+                              }
+                            }}
+                            className="justify-start"
+                          >
+                            <Users className="mr-2 h-4 w-4" />
+                            <div className="flex flex-1 items-center justify-between">
+                              <span>{group.name}</span>
+                              <Badge variant="secondary" className="ml-2">
+                                {group.members.length}人
+                              </Badge>
+                            </div>
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {selectedGroups.length > 0 && (
+                    <div className="bg-muted flex items-center justify-between rounded-lg p-3">
+                      <span className="text-sm">已选择: {selectedGroups.length}/2</span>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedGroups([])}>
+                        清空选择
+                      </Button>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
 

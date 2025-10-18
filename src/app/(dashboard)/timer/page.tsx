@@ -300,16 +300,18 @@ export default function TimerPage() {
             </Button>
           </motion.div>
 
-          {/* 状态提示 */}
+          {/* 状态提示 - 修复位置，显示在时间下方 */}
           <AnimatePresence>
             {isPaused && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="bg-muted absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg px-8 py-4"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mt-4"
               >
-                <p className="text-muted-foreground text-2xl font-bold">已暂停</p>
+                <Badge variant="secondary" className="px-6 py-3 text-xl font-bold">
+                  已暂停
+                </Badge>
               </motion.div>
             )}
           </AnimatePresence>
