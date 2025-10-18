@@ -18,7 +18,7 @@ export const studentTagQuerySchema = z.object({
     val => (val === null || val === undefined || val === '' ? '1' : val),
     z.coerce.number().int().positive()
   ),
-  pageSize: z.preprocess(
+  limit: z.preprocess(
     val => (val === null || val === undefined || val === '' ? '50' : val),
     z.coerce.number().int().positive().max(100)
   ),
@@ -63,7 +63,7 @@ export const filterStudentsByTagsSchema = z.object({
     val => (val === null || val === undefined || val === '' ? '1' : val),
     z.coerce.number().int().positive()
   ),
-  pageSize: z.preprocess(
+  limit: z.preprocess(
     val => (val === null || val === undefined || val === '' ? '50' : val),
     z.coerce.number().int().positive().max(100)
   ),

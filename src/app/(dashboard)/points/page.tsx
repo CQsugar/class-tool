@@ -46,7 +46,7 @@ export default function PointsPage() {
       setLoading(true)
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        pageSize: pageSize.toString(),
+        limit: pageSize.toString(),
       })
 
       if (search) params.append('search', search)
@@ -55,15 +55,19 @@ export default function PointsPage() {
       if (activeFilter !== 'all') params.append('isActive', activeFilter)
 
       const response = await fetch(`/api/points/rules?${params}`)
-      if (!response.ok) throw new Error('加载规则列表失败')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('API Error:', errorData)
+        throw new Error(errorData.error || '加载规则列表失败')
+      }
 
       const data = await response.json()
-      setRules(data.rules)
-      setPageCount(data.pagination.pageCount)
+      setRules(data.rules || [])
+      setPageCount(data.pagination?.pageCount || 1)
 
       // 提取所有分类（用于过滤器）
       const uniqueCategories = Array.from(
-        new Set(data.rules.map((r: PointRuleColumn) => r.category).filter(Boolean))
+        new Set((data.rules || []).map((r: PointRuleColumn) => r.category).filter(Boolean))
       ) as string[]
       setCategories(uniqueCategories)
     } catch (error) {

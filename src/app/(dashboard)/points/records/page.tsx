@@ -68,7 +68,7 @@ export default function PointRecordsPage() {
       setLoading(true)
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        pageSize: pageSize.toString(),
+        limit: pageSize.toString(),
       })
 
       if (search) params.append('search', search)

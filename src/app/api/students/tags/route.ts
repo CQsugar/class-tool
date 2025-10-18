@@ -19,9 +19,9 @@ export async function GET(request: NextRequest) {
     const queryParams = Object.fromEntries(searchParams.entries())
 
     const validatedQuery = studentTagQuerySchema.parse(queryParams)
-    const { page, pageSize, search } = validatedQuery
+    const { page, limit, search } = validatedQuery
 
-    const skip = (page - 1) * pageSize
+    const skip = (page - 1) * limit
 
     // 构建查询条件
     const where: {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       prisma.studentTag.findMany({
         where,
         skip,
-        take: pageSize,
+        take: limit,
         orderBy: {
           createdAt: 'desc',
         },
@@ -65,9 +65,9 @@ export async function GET(request: NextRequest) {
       data: tags,
       pagination: {
         page,
-        pageSize,
+        pageSize: limit,
         total,
-        totalPages: Math.ceil(total / pageSize),
+        totalPages: Math.ceil(total / limit),
       },
     })
   } catch (error) {

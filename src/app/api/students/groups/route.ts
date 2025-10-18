@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const queryParams = {
       page: searchParams.get('page'),
-      pageSize: searchParams.get('pageSize'),
+      limit: searchParams.get('limit'),
       search: searchParams.get('search'),
       isArchived: searchParams.get('isArchived'),
     }
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { page, pageSize, search, isArchived } = validationResult.data
+    const { page, limit, search, isArchived } = validationResult.data
 
     // 构建查询条件
     const where: {
@@ -93,17 +93,17 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'desc',
       },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      skip: (page - 1) * limit,
+      take: limit,
     })
 
-    const pageCount = Math.ceil(total / pageSize)
+    const pageCount = Math.ceil(total / limit)
 
     return NextResponse.json({
       groups,
       pagination: {
         page,
-        pageSize,
+        pageSize: limit,
         total,
         pageCount,
       },

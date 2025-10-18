@@ -33,7 +33,7 @@ export const studentGroupQuerySchema = z.object({
     val => (val === null || val === undefined || val === '' ? '1' : val),
     z.coerce.number().int().positive()
   ),
-  pageSize: z.preprocess(
+  limit: z.preprocess(
     val => (val === null || val === undefined || val === '' ? '20' : val),
     z.coerce.number().int().positive().max(100)
   ),
