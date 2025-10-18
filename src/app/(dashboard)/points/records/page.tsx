@@ -68,7 +68,6 @@ export default function PointRecordsPage() {
   // 加载记录和统计
   const loadRecords = async () => {
     try {
-      setLoading(true)
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: pageSize.toString(),
@@ -99,7 +98,6 @@ export default function PointRecordsPage() {
       console.error('Failed to load records:', error)
       toast.error('加载数据失败')
     } finally {
-      setLoading(false)
       setInitialLoading(false)
     }
   }

@@ -70,7 +70,6 @@ export default function StudentTagsPage() {
 
   const loadTags = async () => {
     try {
-      setLoading(true)
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: pageSize.toString(),
@@ -111,7 +110,6 @@ export default function StudentTagsPage() {
       console.error('Failed to load tags:', error)
       toast.error('加载标签失败')
     } finally {
-      setLoading(false)
       setInitialLoading(false)
     }
   }

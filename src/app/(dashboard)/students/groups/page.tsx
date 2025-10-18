@@ -80,7 +80,6 @@ export default function StudentGroupsPage() {
 
   const loadGroups = async () => {
     try {
-      setLoading(true)
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: pageSize.toString(),
@@ -121,7 +120,6 @@ export default function StudentGroupsPage() {
       console.error('Failed to load groups:', error)
       toast.error('加载分组失败')
     } finally {
-      setLoading(false)
       setInitialLoading(false)
     }
   }
