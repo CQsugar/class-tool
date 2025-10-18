@@ -1,7 +1,7 @@
-import { Metadata } from 'next'
 import { AppSidebar } from '@/components/layout/app-sidebar'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { DashboardHeader } from '@/components/layout/dashboard-header'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: '仪表板 - 班级管理平台',
@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <AppSidebar />
       <SidebarInset>
         <DashboardHeader />
-        {children}
+        <div className="container mx-auto">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )

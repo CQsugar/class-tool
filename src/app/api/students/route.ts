@@ -32,7 +32,11 @@ export async function GET(request: NextRequest) {
     // 构建查询条件
     const where: Prisma.StudentWhereInput = {
       userId: user.id,
-      isArchived,
+    }
+
+    // 添加归档状态筛选
+    if (isArchived !== null) {
+      where.isArchived = isArchived
     }
 
     // 添加搜索条件

@@ -7,8 +7,9 @@ import { updateRedemptionStatusSchema } from '@/lib/validations/store'
 /**
  * GET /api/store/redemptions/[id] - 获取单个兑换记录
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session?.user) {
       return NextResponse.json({ error: '未授权' }, { status: 401 })
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const redemption = await prisma.redemption.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -55,8 +56,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 /**
  * PATCH /api/store/redemptions/[id] - 更新兑换状态
  */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session?.user) {
       return NextResponse.json({ error: '未授权' }, { status: 401 })
@@ -71,7 +73,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       // 1. 获取当前兑换记录
       const redemption = await tx.redemption.findUnique({
         where: {
-          id: params.id,
+          id: id,
           userId: session.user.id,
         },
         include: {
@@ -125,7 +127,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       }
 
       const updatedRedemption = await tx.redemption.update({
-        where: { id: params.id },
+        where: { id: id },
         data: updateData,
         include: {
           student: {

@@ -7,8 +7,9 @@ import { updateStoreItemSchema } from '@/lib/validations/store'
 /**
  * GET /api/store/items/[id] - 获取单个商品
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session?.user) {
       return NextResponse.json({ error: '未授权' }, { status: 401 })
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const item = await prisma.storeItem.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -42,8 +43,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 /**
  * PATCH /api/store/items/[id] - 更新商品
  */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session?.user) {
       return NextResponse.json({ error: '未授权' }, { status: 401 })
@@ -52,7 +54,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     // 验证商品所有权
     const existingItem = await prisma.storeItem.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     })
@@ -65,7 +67,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const validatedData = updateStoreItemSchema.parse(body)
 
     const item = await prisma.storeItem.update({
-      where: { id: params.id },
+      where: { id: id },
       data: validatedData,
     })
 
@@ -82,8 +84,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 /**
  * DELETE /api/store/items/[id] - 删除商品
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session?.user) {
       return NextResponse.json({ error: '未授权' }, { status: 401 })
@@ -92,7 +98,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // 验证商品所有权
     const existingItem = await prisma.storeItem.findUnique({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -117,7 +123,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     await prisma.storeItem.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({ message: '商品已删除' })

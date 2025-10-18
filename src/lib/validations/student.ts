@@ -42,13 +42,16 @@ export const updateStudentSchema = studentSchema.partial()
  * 学生查询参数验证Schema
  */
 export const studentQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
-  search: z.string().optional(),
-  gender: z.nativeEnum(Gender).optional(),
-  isArchived: z.coerce.boolean().optional().default(false),
-  sortBy: z.enum(['name', 'studentNo', 'points', 'createdAt', 'updatedAt']).default('points'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(20),
+  search: z.string().optional().nullable().default(null),
+  gender: z.nativeEnum(Gender).optional().nullable().default(null),
+  isArchived: z.coerce.boolean().optional().nullable().default(false),
+  sortBy: z
+    .enum(['name', 'studentNo', 'points', 'createdAt', 'updatedAt'])
+    .optional()
+    .default('points'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
 })
 
 /**
