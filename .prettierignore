@@ -43,3 +43,5 @@ coverage/
 
 # shadcn/ui generated files
 src/components/ui/
+
+.github/*.md

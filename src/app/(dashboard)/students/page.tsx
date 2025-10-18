@@ -131,7 +131,7 @@ export default function StudentsPage() {
   // 加载分组列表
   const fetchGroups = async () => {
     try {
-      const response = await fetch('/api/students/groups')
+      const response = await fetch('/api/students/groups/list')
       if (response.ok) {
         const data = await response.json()
         setGroups(data.groups || [])
@@ -144,7 +144,7 @@ export default function StudentsPage() {
   // 加载标签列表
   const fetchTags = async () => {
     try {
-      const response = await fetch('/api/students/tags')
+      const response = await fetch('/api/students/tags/list')
       if (response.ok) {
         const data = await response.json()
         setTags(data.tags || [])

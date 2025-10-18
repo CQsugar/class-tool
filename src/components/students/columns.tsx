@@ -8,6 +8,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+
+// 扩展 Student 类型以包含 groups 和 tags
+interface StudentWithRelations extends Student {
+  groups?: Array<{
+    id: string
+    name: string
+    color: string
+  }>
+  tags?: Array<{
+    id: string
+    name: string
+    color: string
+  }>
+}
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface StudentColumnProps {
   onEdit: (student: Student) => void
@@ -27,7 +43,7 @@ export const createStudentColumns = ({
   onEdit,
   onDelete,
   onViewDetail,
-}: StudentColumnProps): ColumnDef<Student>[] => [
+}: StudentColumnProps): ColumnDef<StudentWithRelations>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -133,6 +149,104 @@ export const createStudentColumns = ({
             {points >= 0 ? '+' : ''}
             {points}
           </Badge>
+        </div>
+      )
+    },
+  },
+  {
+    id: 'groups',
+    header: '分组',
+    cell: ({ row }) => {
+      const student = row.original
+      const groups = student.groups || []
+
+      if (groups.length === 0) return <div className="text-muted-foreground">-</div>
+
+      const displayGroups = groups.slice(0, 2)
+      const remainingCount = groups.length - 2
+
+      return (
+        <div className="flex items-center gap-1">
+          {displayGroups.map(group => (
+            <Badge
+              key={group.id}
+              variant="outline"
+              style={{
+                backgroundColor: `${group.color}20`,
+                borderColor: group.color,
+                color: group.color,
+              }}
+            >
+              {group.name}
+            </Badge>
+          ))}
+          {remainingCount > 0 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="cursor-help">
+                    +{remainingCount}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-1">
+                    {groups.slice(2).map(group => (
+                      <div key={group.id}>{group.name}</div>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+      )
+    },
+  },
+  {
+    id: 'tags',
+    header: '标签',
+    cell: ({ row }) => {
+      const student = row.original
+      const tags = student.tags || []
+
+      if (tags.length === 0) return <div className="text-muted-foreground">-</div>
+
+      const displayTags = tags.slice(0, 2)
+      const remainingCount = tags.length - 2
+
+      return (
+        <div className="flex items-center gap-1">
+          {displayTags.map(tag => (
+            <Badge
+              key={tag.id}
+              variant="outline"
+              style={{
+                backgroundColor: `${tag.color}20`,
+                borderColor: tag.color,
+                color: tag.color,
+              }}
+            >
+              {tag.name}
+            </Badge>
+          ))}
+          {remainingCount > 0 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="cursor-help">
+                    +{remainingCount}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-1">
+                    {tags.slice(2).map(tag => (
+                      <div key={tag.id}>{tag.name}</div>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       )
     },

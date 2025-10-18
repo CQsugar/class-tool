@@ -189,13 +189,31 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         id,
         userId,
       },
+      include: {
+        _count: {
+          select: {
+            members: true,
+          },
+        },
+      },
     })
 
     if (!existing) {
       return NextResponse.json({ error: '分组不存在' }, { status: 404 })
     }
 
-    // 删除分组（级联删除成员关系）
+    // 检查是否有关联的学生
+    if (existing._count.members > 0) {
+      return NextResponse.json(
+        {
+          error: '该分组下还有学生，无法删除',
+          memberCount: existing._count.members,
+        },
+        { status: 400 }
+      )
+    }
+
+    // 删除分组
     await prisma.studentGroup.delete({
       where: { id },
     })

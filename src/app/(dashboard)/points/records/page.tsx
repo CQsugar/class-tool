@@ -30,7 +30,6 @@ export default function PointRecordsPage() {
   const [records, setRecords] = useState<PointRecordColumn[]>([])
   const [stats, setStats] = useState<PointRecordStats | null>(null)
   const [students, setStudents] = useState<Student[]>([])
-  const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
 
   // 分页和过滤状态

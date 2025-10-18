@@ -146,6 +146,13 @@ export async function DELETE(
     // 检查标签是否存在
     const existingTag = await prisma.studentTag.findUnique({
       where: { id },
+      include: {
+        _count: {
+          select: {
+            relations: true,
+          },
+        },
+      },
     })
 
     if (!existingTag) {
@@ -157,7 +164,18 @@ export async function DELETE(
       return NextResponse.json({ error: '无权删除此标签' }, { status: 403 })
     }
 
-    // 删除标签（关联的 relations 会因为 onDelete: Cascade 自动删除）
+    // 检查是否有关联的学生
+    if (existingTag._count.relations > 0) {
+      return NextResponse.json(
+        {
+          error: '该标签下还有学生，无法删除',
+          studentCount: existingTag._count.relations,
+        },
+        { status: 400 }
+      )
+    }
+
+    // 删除标签
     await prisma.studentTag.delete({
       where: { id },
     })

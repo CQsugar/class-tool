@@ -95,12 +95,24 @@ export async function GET(request: NextRequest) {
           // pointRecords 仅在详情页面加载
           groupMembers: {
             include: {
-              group: true,
+              group: {
+                select: {
+                  id: true,
+                  name: true,
+                  color: true,
+                },
+              },
             },
           },
           tagRelations: {
             include: {
-              tag: true,
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                  color: true,
+                },
+              },
             },
           },
         },
@@ -110,9 +122,27 @@ export async function GET(request: NextRequest) {
       }),
     ])
 
+    // 优化返回数据：简化分组和标签结构
+    const optimizedStudents = students.map(student => ({
+      ...student,
+      groups: student.groupMembers.map(gm => ({
+        id: gm.group.id,
+        name: gm.group.name,
+        color: gm.group.color,
+      })),
+      tags: student.tagRelations.map(tr => ({
+        id: tr.tag.id,
+        name: tr.tag.name,
+        color: tr.tag.color,
+      })),
+      // 移除原始的嵌套结构
+      groupMembers: undefined,
+      tagRelations: undefined,
+    }))
+
     // 返回分页数据
     return NextResponse.json({
-      data: students,
+      data: optimizedStudents,
       pagination: {
         page,
         limit,

@@ -143,12 +143,12 @@ export class OSSStorageStrategy implements StorageStrategy {
     this.region = region
   }
 
-  async save(file: File, options?: SaveOptions): Promise<string> {
+  async save(_file: File, _options?: SaveOptions): Promise<string> {
     // TODO: 实现OSS上传
     throw new Error('OSS存储策略尚未实现')
   }
 
-  async delete(url: string): Promise<void> {
+  async delete(_url: string): Promise<void> {
     // TODO: 实现OSS删除
     throw new Error('OSS存储策略尚未实现')
   }

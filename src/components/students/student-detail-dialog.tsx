@@ -1,10 +1,8 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -13,20 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import {
-  Award,
-  Calendar,
-  Mail,
-  Phone,
-  Tag,
-  Users,
-  User,
-  TrendingUp,
-  TrendingDown,
-} from 'lucide-react'
+import { Calendar, Mail, Phone, Tag, TrendingDown, TrendingUp, User, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface StudentDetailDialogProps {
@@ -45,7 +33,7 @@ interface StudentDetail {
   parentPhone?: string
   email?: string
   address?: string
-  totalPoints: number
+  points: number
   createdAt: string
   updatedAt: string
   groupMembers: Array<{
@@ -83,6 +71,7 @@ export function StudentDetailDialog({ open, onOpenChange, studentId }: StudentDe
     if (open && studentId) {
       loadStudentDetail()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, studentId])
 
   const loadStudentDetail = async () => {
@@ -140,7 +129,7 @@ export function StudentDetailDialog({ open, onOpenChange, studentId }: StudentDe
                     <p className="text-muted-foreground text-sm">学号: {student.studentNo}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-primary text-3xl font-bold">{student.totalPoints}</div>
+                    <div className="text-primary text-3xl font-bold">{student.points}</div>
                     <div className="text-muted-foreground text-sm">总积分</div>
                   </div>
                 </div>
@@ -149,9 +138,9 @@ export function StudentDetailDialog({ open, onOpenChange, studentId }: StudentDe
                   <div className="flex items-center gap-2 text-sm">
                     <User className="text-muted-foreground h-4 w-4" />
                     <span>
-                      {student.gender === 'male'
+                      {student.gender === 'MALE'
                         ? '男'
-                        : student.gender === 'female'
+                        : student.gender === 'FEMALE'
                           ? '女'
                           : '其他'}
                     </span>

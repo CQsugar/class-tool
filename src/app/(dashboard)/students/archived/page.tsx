@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { createArchivedStudentColumns } from '@/components/students/archived-columns'
 import { DataTable } from '@/components/students/data-table'
 import { ExportStudentDialog } from '@/components/students/export-student-dialog'
+import { StudentDetailDialog } from '@/components/students/student-detail-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -28,6 +29,8 @@ export default function ArchivedStudentsPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoading, setInitialLoading] = useState(true)
   const [exportDialogOpen, setExportDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [viewingStudentId, setViewingStudentId] = useState<string | null>(null)
 
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1)
@@ -101,8 +104,16 @@ export default function ArchivedStudentsPage() {
     setExportDialogOpen(true)
   }
 
+  // 查看详情
+  const handleViewDetail = (student: Student) => {
+    setViewingStudentId(student.id)
+    setDetailDialogOpen(true)
+  }
+
   // 创建只读列配置
-  const columns = createArchivedStudentColumns()
+  const columns = createArchivedStudentColumns({
+    onViewDetail: handleViewDetail,
+  })
 
   // 页面初始加载时显示全屏loading
   if (initialLoading) {
@@ -203,6 +214,13 @@ export default function ArchivedStudentsPage() {
         open={exportDialogOpen}
         onOpenChange={setExportDialogOpen}
         students={students}
+      />
+
+      {/* 学生详情对话框 */}
+      <StudentDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        studentId={viewingStudentId}
       />
     </div>
   )
