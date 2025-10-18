@@ -17,6 +17,7 @@ model User {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   accounts      Account[]
   callHistories CallHistory[]
+  pkSessions    PKSession[]
   pointRecords  PointRecord[]
   pointRules    PointRule[]
   redemptions   Redemption[]
@@ -86,12 +87,13 @@ model Student {
   createdAt     DateTime             @default(now()) @map("created_at")
   updatedAt     DateTime             @updatedAt @map("updated_at")
   userId        String               @map("user_id")
-  callHistories CallHistory[]
-  pointRecords  PointRecord[]
-  redemptions   Redemption[]
-  groupMembers  StudentGroupMember[]
-  tagRelations  StudentTagRelation[]
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  callHistories  CallHistory[]
+  pkParticipants PKParticipant[]
+  pointRecords   PointRecord[]
+  redemptions    Redemption[]
+  groupMembers   StudentGroupMember[]
+  tagRelations   StudentTagRelation[]
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([studentNo])
@@ -109,6 +111,7 @@ model StudentGroup {
   updatedAt   DateTime             @updatedAt @map("updated_at")
   userId      String               @map("user_id")
   members     StudentGroupMember[]
+  pkParticipants PKParticipant[]
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -256,6 +259,44 @@ model Verification {
   @@map("verification")
 }
 
+model PKSession {
+  id           String          @id @default(cuid())
+  userId       String          @map("user_id")
+  mode         PKMode
+  topic        String?
+  rewardPoints Int             @default(0) @map("reward_points")
+  winnerId     String?         @map("winner_id")
+  winnerType   PKWinnerType?   @map("winner_type")
+  status       PKStatus        @default(ONGOING)
+  duration     Int?
+  startedAt    DateTime        @default(now()) @map("started_at")
+  finishedAt   DateTime?       @map("finished_at")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participants PKParticipant[]
+
+  @@index([userId])
+  @@index([startedAt])
+  @@map("pk_sessions")
+}
+
+model PKParticipant {
+  id        String       @id @default(cuid())
+  sessionId String       @map("session_id")
+  type      PKEntityType
+  studentId String?      @map("student_id")
+  groupId   String?      @map("group_id")
+  isWinner  Boolean      @default(false) @map("is_winner")
+  createdAt DateTime     @default(now()) @map("created_at")
+  group     StudentGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  session   PKSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student   Student?     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("pk_participants")
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -283,4 +324,26 @@ enum CallMode {
   INDIVIDUAL
   GROUP
   RANDOM
+}
+
+enum PKMode {
+  INDIVIDUAL
+  GROUP
+  RANDOM
+}
+
+enum PKStatus {
+  ONGOING
+  FINISHED
+  CANCELLED
+}
+
+enum PKWinnerType {
+  STUDENT
+  GROUP
+}
+
+enum PKEntityType {
+  STUDENT
+  GROUP
 }
