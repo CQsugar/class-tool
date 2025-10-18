@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,29 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ====================== Better Auth Tables ======================
-
 model User {
-  id            String   @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false) @map("email_verified")
+  email         String         @unique
+  emailVerified Boolean        @default(false) @map("email_verified")
   image         String?
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
-  accounts Account[]
-  sessions Session[]
-
-  // 班级管理相关关系
-  students      Student[]
-  pointRules    PointRule[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  accounts      Account[]
+  callHistories CallHistory[]
   pointRecords  PointRecord[]
+  pointRules    PointRule[]
   redemptions   Redemption[]
+  sessions      Session[]
+  storeItems    StoreItem[]
   studentGroups StudentGroup[]
   studentTags   StudentTag[]
-  storeItems    StoreItem[]
-  callHistories CallHistory[]
+  students      Student[]
 
   @@map("users")
 }
@@ -54,8 +43,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
   @@map("accounts")
@@ -70,8 +58,7 @@ model Session {
   updatedAt DateTime @updatedAt @map("updated_at")
   ipAddress String?  @map("ip_address")
   userAgent String?  @map("user_agent")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
@@ -85,31 +72,26 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// ====================== 学生管理 ======================
-
 model Student {
-  id          String   @id @default(cuid())
-  name        String
-  studentNo   String   @unique @map("student_no")
-  gender      Gender
-  phone       String?
-  parentPhone String?  @map("parent_phone")
-  points      Int      @default(0)
-  avatar      String?
-  notes       String?
-  isArchived  Boolean  @default(false) @map("is_archived")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // 关联关系
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id            String               @id @default(cuid())
+  name          String
+  studentNo     String               @unique @map("student_no")
+  gender        Gender
+  phone         String?
+  parentPhone   String?              @map("parent_phone")
+  points        Int                  @default(0)
+  avatar        String?
+  notes         String?
+  isArchived    Boolean              @default(false) @map("is_archived")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  userId        String               @map("user_id")
+  callHistories CallHistory[]
   pointRecords  PointRecord[]
   redemptions   Redemption[]
   groupMembers  StudentGroupMember[]
   tagRelations  StudentTagRelation[]
-  callHistories CallHistory[]
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([studentNo])
@@ -117,90 +99,71 @@ model Student {
   @@map("students")
 }
 
-enum Gender {
-  MALE
-  FEMALE
-}
-
-// ====================== 分组管理 ======================
-
 model StudentGroup {
-  id          String   @id @default(cuid())
+  id          String               @id @default(cuid())
   name        String
   description String?
   color       String?
-  isArchived  Boolean  @default(false) @map("is_archived")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  members StudentGroupMember[]
+  isArchived  Boolean              @default(false) @map("is_archived")
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+  userId      String               @map("user_id")
+  members     StudentGroupMember[]
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("student_groups")
 }
 
 model StudentGroupMember {
-  id        String @id @default(cuid())
-  studentId String @map("student_id")
-  groupId   String @map("group_id")
-
-  student Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  group   StudentGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  id        String       @id @default(cuid())
+  studentId String       @map("student_id")
+  groupId   String       @map("group_id")
+  group     StudentGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student   Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, groupId])
   @@map("student_group_members")
 }
 
-// ====================== 标签管理 ======================
-
 model StudentTag {
-  id        String   @id @default(cuid())
+  id        String               @id @default(cuid())
   name      String
   color     String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+  userId    String               @map("user_id")
   relations StudentTagRelation[]
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, name])
   @@map("student_tags")
 }
 
 model StudentTagRelation {
-  id        String @id @default(cuid())
-  studentId String @map("student_id")
-  tagId     String @map("tag_id")
-
-  student Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tag     StudentTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  id        String     @id @default(cuid())
+  studentId String     @map("student_id")
+  tagId     String     @map("tag_id")
+  student   Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tag       StudentTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, tagId])
   @@map("student_tag_relations")
 }
 
-// ====================== 积分系统 ======================
-
 model PointRule {
-  id          String    @id @default(cuid())
-  name        String
-  points      Int
-  type        PointType
-  category    String?
-  description String?
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id           String        @id @default(cuid())
+  name         String
+  points       Int
+  type         PointType
+  category     String?
+  description  String?
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  userId       String        @map("user_id")
   pointRecords PointRecord[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])
@@ -208,19 +171,17 @@ model PointRule {
 }
 
 model PointRecord {
-  id        String    @id @default(cuid())
+  id        String     @id @default(cuid())
   points    Int
   reason    String
   type      PointType
-  createdAt DateTime  @default(now()) @map("created_at")
-
-  studentId String  @map("student_id")
-  userId    String  @map("user_id")
-  ruleId    String? @map("rule_id")
-
-  student Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rule    PointRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  createdAt DateTime   @default(now()) @map("created_at")
+  studentId String     @map("student_id")
+  userId    String     @map("user_id")
+  ruleId    String?    @map("rule_id")
+  rule      PointRule? @relation(fields: [ruleId], references: [id])
+  student   Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([userId])
@@ -228,42 +189,26 @@ model PointRecord {
   @@map("point_records")
 }
 
-enum PointType {
-  ADD
-  SUBTRACT
-  RESET
-}
-
-// ====================== 积分商店 ======================
-
 model StoreItem {
   id          String       @id @default(cuid())
   name        String
   description String?
   cost        Int
   image       String?
-  type        ItemType     @default(VIRTUAL)
   stock       Int?
-  sortOrder   Int          @default(0) @map("sort_order")
   isActive    Boolean      @default(true) @map("is_active")
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  userId      String       @map("user_id")
+  sortOrder   Int          @default(0) @map("sort_order")
+  type        ItemType     @default(VIRTUAL)
   redemptions Redemption[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])
   @@index([isActive])
   @@map("store_items")
-}
-
-enum ItemType {
-  VIRTUAL   // 虚拟奖励（如免写作业券）
-  PHYSICAL  // 实物奖励（如文具、礼品）
-  PRIVILEGE // 特权奖励（如选座位优先权）
 }
 
 model Redemption {
@@ -273,14 +218,12 @@ model Redemption {
   notes       String?
   redeemedAt  DateTime         @default(now()) @map("redeemed_at")
   fulfilledAt DateTime?        @map("fulfilled_at")
-
-  studentId String @map("student_id")
-  itemId    String @map("item_id")
-  userId    String @map("user_id")
-
-  student Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  item    StoreItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentId   String           @map("student_id")
+  itemId      String           @map("item_id")
+  userId      String           @map("user_id")
+  item        StoreItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([userId])
@@ -288,34 +231,18 @@ model Redemption {
   @@map("redemptions")
 }
 
-enum RedemptionStatus {
-  PENDING
-  FULFILLED
-  CANCELLED
-}
-
-// ====================== 随机点名 ======================
-
 model CallHistory {
-  id       String   @id @default(cuid())
-  mode     CallMode
-  calledAt DateTime @default(now()) @map("called_at")
-
-  studentId String? @map("student_id")
-  userId    String  @map("user_id")
-
-  student Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  mode      CallMode
+  calledAt  DateTime @default(now()) @map("called_at")
+  studentId String?  @map("student_id")
+  userId    String   @map("user_id")
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([calledAt])
   @@map("call_histories")
-}
-
-enum CallMode {
-  INDIVIDUAL
-  GROUP
-  RANDOM
 }
 
 model Verification {
@@ -327,4 +254,33 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum PointType {
+  ADD
+  SUBTRACT
+  RESET
+}
+
+enum ItemType {
+  VIRTUAL
+  PHYSICAL
+  PRIVILEGE
+}
+
+enum RedemptionStatus {
+  PENDING
+  FULFILLED
+  CANCELLED
+}
+
+enum CallMode {
+  INDIVIDUAL
+  GROUP
+  RANDOM
 }
