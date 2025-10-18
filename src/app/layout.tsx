@@ -1,3 +1,4 @@
+import { WebVitals } from '@/components/web-vitals'
 import type { Metadata } from 'next'
 import { ThemeProvider } from 'next-themes'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -30,6 +31,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class">
           <Providers>{children}</Providers>
         </ThemeProvider>
+        <WebVitals />
       </body>
     </html>
   )

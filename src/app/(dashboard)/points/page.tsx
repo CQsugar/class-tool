@@ -1,9 +1,9 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+
 import { PointRuleColumn, getPointRuleColumns } from '@/components/points/point-rule-columns'
 import { PointRuleDataTable } from '@/components/points/point-rule-data-table'
-import { PointRuleFormDialog } from '@/components/points/point-rule-form-dialog'
-import { ResetPointsDialog } from '@/components/points/reset-points-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,22 @@ import { PointType } from '@prisma/client'
 import { Plus, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+
+// 动态导入对话框组件
+const PointRuleFormDialog = dynamic(
+  () =>
+    import('@/components/points/point-rule-form-dialog').then(mod => ({
+      default: mod.PointRuleFormDialog,
+    })),
+  { ssr: false }
+)
+const ResetPointsDialog = dynamic(
+  () =>
+    import('@/components/points/reset-points-dialog').then(mod => ({
+      default: mod.ResetPointsDialog,
+    })),
+  { ssr: false }
+)
 
 export default function PointsPage() {
   const [rules, setRules] = useState<PointRuleColumn[]>([])

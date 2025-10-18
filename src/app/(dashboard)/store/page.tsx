@@ -1,11 +1,5 @@
 'use client'
 
-import { ItemType } from '@prisma/client'
-import { ChevronLeft, ChevronRight, Crown, Gift, Package, Plus, Search } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
-
-import { StoreItemFormDialog } from '@/components/store/store-item-form-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +22,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ItemType } from '@prisma/client'
+import { ChevronLeft, ChevronRight, Crown, Gift, Package, Plus, Search } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
+// 动态导入表单对话框
+const StoreItemFormDialog = dynamic(
+  () =>
+    import('@/components/store/store-item-form-dialog').then(mod => ({
+      default: mod.StoreItemFormDialog,
+    })),
+  { ssr: false }
+)
 
 interface StoreItem {
   id: string

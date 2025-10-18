@@ -2,19 +2,67 @@
 
 import { Student } from '@prisma/client'
 import { Archive, BookCheck, Download, Plus, Tag, Upload, Users, Zap } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import { ApplyRuleDialog } from '@/components/points/apply-rule-dialog'
-import { QuickPointsDialog } from '@/components/points/quick-points-dialog'
-import { BatchGroupDialog } from '@/components/students/batch-group-dialog'
-import { BatchTagDialog } from '@/components/students/batch-tag-dialog'
 import { createStudentColumns } from '@/components/students/columns'
 import { DataTable } from '@/components/students/data-table'
-import { ExportStudentDialog } from '@/components/students/export-student-dialog'
-import { ImportStudentDialog } from '@/components/students/import-student-dialog'
-import { StudentDetailDialog } from '@/components/students/student-detail-dialog'
-import { StudentFormDialog } from '@/components/students/student-form-dialog'
+
+// 动态导入大型对话框组件以减少初始加载体积
+const StudentFormDialog = dynamic(
+  () =>
+    import('@/components/students/student-form-dialog').then(mod => ({
+      default: mod.StudentFormDialog,
+    })),
+  { ssr: false }
+)
+const ImportStudentDialog = dynamic(
+  () =>
+    import('@/components/students/import-student-dialog').then(mod => ({
+      default: mod.ImportStudentDialog,
+    })),
+  { ssr: false }
+)
+const ExportStudentDialog = dynamic(
+  () =>
+    import('@/components/students/export-student-dialog').then(mod => ({
+      default: mod.ExportStudentDialog,
+    })),
+  { ssr: false }
+)
+const StudentDetailDialog = dynamic(
+  () =>
+    import('@/components/students/student-detail-dialog').then(mod => ({
+      default: mod.StudentDetailDialog,
+    })),
+  { ssr: false }
+)
+const QuickPointsDialog = dynamic(
+  () =>
+    import('@/components/points/quick-points-dialog').then(mod => ({
+      default: mod.QuickPointsDialog,
+    })),
+  { ssr: false }
+)
+const ApplyRuleDialog = dynamic(
+  () =>
+    import('@/components/points/apply-rule-dialog').then(mod => ({ default: mod.ApplyRuleDialog })),
+  { ssr: false }
+)
+const BatchTagDialog = dynamic(
+  () =>
+    import('@/components/students/batch-tag-dialog').then(mod => ({ default: mod.BatchTagDialog })),
+  { ssr: false }
+)
+const BatchGroupDialog = dynamic(
+  () =>
+    import('@/components/students/batch-group-dialog').then(mod => ({
+      default: mod.BatchGroupDialog,
+    })),
+  { ssr: false }
+)
+
 import {
   AlertDialog,
   AlertDialogAction,

@@ -1,10 +1,31 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Leaderboard } from './leaderboard'
-import { OverviewStats } from './overview-stats'
-import { QuickPointsPanel } from './quick-points-panel'
+
+// 动态导入大型组件以优化首屏加载
+const OverviewStats = dynamic(
+  () => import('./overview-stats').then(mod => ({ default: mod.OverviewStats })),
+  {
+    ssr: false,
+    loading: () => <div className="bg-muted h-32 animate-pulse rounded-lg" />,
+  }
+)
+const QuickPointsPanel = dynamic(
+  () => import('./quick-points-panel').then(mod => ({ default: mod.QuickPointsPanel })),
+  {
+    ssr: false,
+    loading: () => <div className="bg-muted h-96 animate-pulse rounded-lg" />,
+  }
+)
+const Leaderboard = dynamic(
+  () => import('./leaderboard').then(mod => ({ default: mod.Leaderboard })),
+  {
+    ssr: false,
+    loading: () => <div className="bg-muted h-96 animate-pulse rounded-lg" />,
+  }
+)
 
 interface Student {
   id: string
