@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { ColorPicker } from '@/components/ui/color-picker'
 import {
   Dialog,
   DialogContent,
@@ -32,25 +33,8 @@ interface StudentTagFormDialogProps {
   onSuccess?: () => void
 }
 
-// 16种预设颜色
-const PRESET_COLORS = [
-  '#ef4444', // 红色
-  '#f97316', // 橙色
-  '#f59e0b', // 琥珀色
-  '#eab308', // 黄色
-  '#84cc16', // 青柠色
-  '#22c55e', // 绿色
-  '#10b981', // 翡翠色
-  '#14b8a6', // 蓝绿色
-  '#06b6d4', // 青色
-  '#0ea5e9', // 天蓝色
-  '#3b82f6', // 蓝色
-  '#6366f1', // 靛蓝色
-  '#8b5cf6', // 紫色
-  '#a855f7', // 深紫色
-  '#d946ef', // 品红色
-  '#ec4899', // 粉红色
-]
+// 默认颜色 (indigo)
+const DEFAULT_COLOR = '#6366f1'
 
 export function StudentTagFormDialog({
   open,
@@ -65,7 +49,7 @@ export function StudentTagFormDialog({
     resolver: zodResolver(studentTagSchema),
     defaultValues: {
       name: '',
-      color: PRESET_COLORS[0],
+      color: DEFAULT_COLOR,
     },
   })
 
@@ -78,7 +62,7 @@ export function StudentTagFormDialog({
     } else {
       form.reset({
         name: '',
-        color: PRESET_COLORS[0],
+        color: DEFAULT_COLOR,
       })
     }
   }, [tag, form])
@@ -145,36 +129,7 @@ export function StudentTagFormDialog({
                 <FormItem>
                   <FormLabel>标签颜色</FormLabel>
                   <FormControl>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-8 gap-2">
-                        {PRESET_COLORS.map(color => (
-                          <button
-                            key={color}
-                            type="button"
-                            className={`h-8 w-8 rounded-md border-2 transition-all hover:scale-110 ${
-                              field.value === color
-                                ? 'border-primary ring-primary ring-2 ring-offset-2'
-                                : 'border-transparent'
-                            }`}
-                            style={{ backgroundColor: color }}
-                            onClick={() => field.onChange(color)}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="text"
-                          value={field.value}
-                          onChange={e => field.onChange(e.target.value)}
-                          placeholder="#000000"
-                          className="font-mono"
-                        />
-                        <div
-                          className="h-10 w-10 rounded border"
-                          style={{ backgroundColor: field.value }}
-                        />
-                      </div>
-                    </div>
+                    <ColorPicker value={field.value || '#6366f1'} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

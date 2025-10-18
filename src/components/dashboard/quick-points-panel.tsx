@@ -107,20 +107,37 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
         {/* 学生选择 */}
         <div className="space-y-2">
           <Label>选择学生</Label>
-          <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-            <SelectTrigger>
-              <SelectValue placeholder="选择学生..." />
-            </SelectTrigger>
-            <SelectContent>
-              {students.map(student => (
-                <SelectItem key={student.id} value={student.id}>
-                  {student.name} ({student.studentNo}) - {student.points}分
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedStudentData && (
-            <p className="text-muted-foreground text-sm">当前积分: {selectedStudentData.points}</p>
+          {students.length === 0 ? (
+            <div className="rounded-md border border-dashed p-4 text-center">
+              <p className="text-muted-foreground mb-2 text-sm">暂无学生信息</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => (window.location.href = '/students')}
+              >
+                前往创建学生
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                <SelectTrigger>
+                  <SelectValue placeholder="选择学生..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {students.map(student => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {student.name} ({student.studentNo}) - {student.points}分
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedStudentData && (
+                <p className="text-muted-foreground text-sm">
+                  当前积分: {selectedStudentData.points}
+                </p>
+              )}
+            </>
           )}
         </div>
 
@@ -132,7 +149,7 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
               variant="outline"
               size="sm"
               onClick={() => handleQuickAction(1, '课堂表现良好')}
-              disabled={loading || !selectedStudent}
+              disabled={loading || !selectedStudent || students.length === 0}
               className="text-green-600"
             >
               <Plus className="mr-1 h-4 w-4" />
@@ -142,7 +159,7 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
               variant="outline"
               size="sm"
               onClick={() => handleQuickAction(5, '作业优秀')}
-              disabled={loading || !selectedStudent}
+              disabled={loading || !selectedStudent || students.length === 0}
               className="text-green-600"
             >
               <Plus className="mr-1 h-4 w-4" />
@@ -152,7 +169,7 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
               variant="outline"
               size="sm"
               onClick={() => handleQuickAction(10, '课堂表现突出')}
-              disabled={loading || !selectedStudent}
+              disabled={loading || !selectedStudent || students.length === 0}
               className="text-green-600"
             >
               <Plus className="mr-1 h-4 w-4" />
@@ -162,7 +179,7 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
               variant="outline"
               size="sm"
               onClick={() => handleQuickAction(-1, '迟到')}
-              disabled={loading || !selectedStudent}
+              disabled={loading || !selectedStudent || students.length === 0}
               className="text-red-600"
             >
               <Minus className="mr-1 h-4 w-4" />
@@ -172,7 +189,7 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
               variant="outline"
               size="sm"
               onClick={() => handleQuickAction(-5, '违反纪律')}
-              disabled={loading || !selectedStudent}
+              disabled={loading || !selectedStudent || students.length === 0}
               className="text-red-600"
             >
               <Minus className="mr-1 h-4 w-4" />
@@ -182,7 +199,7 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
               variant="outline"
               size="sm"
               onClick={() => handleQuickAction(-10, '严重违纪')}
-              disabled={loading || !selectedStudent}
+              disabled={loading || !selectedStudent || students.length === 0}
               className="text-red-600"
             >
               <Minus className="mr-1 h-4 w-4" />
@@ -200,20 +217,20 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
               placeholder="积分数(正数加分,负数扣分)"
               value={points}
               onChange={e => setPoints(e.target.value)}
-              disabled={loading}
+              disabled={loading || students.length === 0}
             />
           </div>
           <Input
             placeholder="操作原因"
             value={reason}
             onChange={e => setReason(e.target.value)}
-            disabled={loading}
+            disabled={loading || students.length === 0}
             maxLength={200}
           />
           <Button
             className="w-full"
             onClick={handleCustomAction}
-            disabled={loading || !selectedStudent}
+            disabled={loading || !selectedStudent || students.length === 0}
           >
             <Zap className="mr-2 h-4 w-4" />
             {loading ? '处理中...' : '执行操作'}

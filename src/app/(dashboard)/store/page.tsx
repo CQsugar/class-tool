@@ -76,7 +76,7 @@ export default function StoreItemsPage() {
       setLoading(true)
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        pageSize: pageSize.toString(),
+        limit: pageSize.toString(),
       })
 
       if (search) params.append('search', search)
@@ -308,10 +308,8 @@ export default function StoreItemsPage() {
           {/* 分页 */}
           {pageCount > 1 && (
             <div className="mt-6 flex items-center justify-between">
-              <div className="text-muted-foreground text-sm">
-                第 {currentPage} 页，共 {pageCount} 页
-              </div>
-              <div className="flex gap-2">
+              <div className="text-muted-foreground text-sm">共 {pageCount} 页</div>
+              <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -320,11 +318,14 @@ export default function StoreItemsPage() {
                 >
                   上一页
                 </Button>
+                <div className="text-sm">
+                  第 {currentPage} / {pageCount || 1} 页
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))}
-                  disabled={currentPage === pageCount}
+                  disabled={currentPage >= pageCount}
                 >
                   下一页
                 </Button>

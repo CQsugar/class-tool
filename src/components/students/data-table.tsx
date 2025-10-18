@@ -6,7 +6,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -24,6 +23,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -39,6 +45,13 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string
   onRowClick?: (row: TData) => void
   onSelectionChange?: (selectedRows: TData[]) => void
+  // 服务端分页支持
+  currentPage?: number
+  pageSize?: number
+  pageCount?: number
+  totalItems?: number
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (pageSize: number) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -48,11 +61,20 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = '搜索...',
   onRowClick,
   onSelectionChange,
+  currentPage,
+  pageSize,
+  pageCount,
+  totalItems,
+  onPageChange,
+  onPageSizeChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  // 判断是否使用服务端分页
+  const useServerPagination = currentPage !== undefined && onPageChange !== undefined
 
   const table = useReactTable({
     data,
@@ -60,7 +82,6 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -80,6 +101,35 @@ export function DataTable<TData, TValue>({
       onSelectionChange(selectedRows)
     }
   }, [rowSelection, onSelectionChange, table])
+
+  // 列ID到中文名称的映射
+  const getColumnLabel = (columnId: string): string => {
+    const columnLabels: Record<string, string> = {
+      select: '选择',
+      avatar: '头像',
+      name: '姓名',
+      studentNo: '学号',
+      gender: '性别',
+      phone: '手机号',
+      parentPhone: '家长手机',
+      points: '积分',
+      createdAt: '创建时间',
+      actions: '操作',
+      // 通用字段
+      type: '类型',
+      category: '分类',
+      description: '说明',
+      status: '状态',
+      student: '学生',
+      reason: '原因',
+      rule: '规则',
+      cost: '消耗积分',
+      item: '商品',
+      redeemedAt: '兑换时间',
+      fulfilledAt: '发放时间',
+    }
+    return columnLabels[columnId] || columnId
+  }
 
   return (
     <div className="w-full">
@@ -106,11 +156,10 @@ export function DataTable<TData, TValue>({
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className="capitalize"
                     checked={column.getIsVisible()}
                     onCheckedChange={value => column.toggleVisibility(!!value)}
                   >
-                    {column.id}
+                    {getColumnLabel(column.id)}
                   </DropdownMenuCheckboxItem>
                 )
               })}
@@ -160,30 +209,73 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          已选择 {table.getFilteredSelectedRowModel().rows.length} 项，共{' '}
-          {table.getFilteredRowModel().rows.length} 项
+
+      {/* 分页 - 根据是否有服务端分页参数显示不同样式 */}
+      {useServerPagination ? (
+        <div className="flex items-center justify-between py-4">
+          <div className="flex items-center space-x-2">
+            <p className="text-muted-foreground text-sm">每页显示</p>
+            <Select
+              value={pageSize?.toString()}
+              onValueChange={value => onPageSizeChange?.(Number(value))}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-sm">条</p>
+            {totalItems !== undefined && (
+              <p className="text-muted-foreground text-sm">
+                共 {totalItems} 项
+                {table.getFilteredSelectedRowModel().rows.length > 0 &&
+                  `，已选择 ${table.getFilteredSelectedRowModel().rows.length} 项`}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              上一页
+            </Button>
+            <div className="text-sm">
+              第 {currentPage} / {pageCount || 1} 页
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(currentPage + 1)}
+              disabled={currentPage >= (pageCount || 1)}
+            >
+              下一页
+            </Button>
+          </div>
         </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            上一页
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            下一页
-          </Button>
+      ) : (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-muted-foreground flex-1 text-sm">
+            已选择 {table.getFilteredSelectedRowModel().rows.length} 项，共{' '}
+            {table.getFilteredRowModel().rows.length} 项
+          </div>
+          <div className="space-x-2">
+            <Button variant="outline" size="sm" disabled>
+              上一页
+            </Button>
+            <Button variant="outline" size="sm" disabled>
+              下一页
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

@@ -35,11 +35,22 @@ export default function StudentsPage() {
   const [tagMode, setTagMode] = useState<'add' | 'remove'>('add')
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [totalItems, setTotalItems] = useState(0)
+  const pageCount = Math.ceil(totalItems / pageSize)
+
   // 获取学生列表
   const fetchStudents = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/students')
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      })
+
+      const response = await fetch(`/api/students?${params}`)
 
       if (!response.ok) {
         throw new Error('获取学生列表失败')
@@ -47,6 +58,7 @@ export default function StudentsPage() {
 
       const result = await response.json()
       setStudents(result.data || [])
+      setTotalItems(result.pagination?.total || 0)
     } catch (error) {
       console.error('获取学生列表失败:', error)
       toast.error('获取学生列表失败')
@@ -57,7 +69,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     fetchStudents()
-  }, [])
+  }, [currentPage, pageSize])
 
   // 编辑学生
   const handleEdit = (student: Student) => {
@@ -268,6 +280,15 @@ export default function StudentsPage() {
             searchKey="name"
             searchPlaceholder="搜索学生姓名..."
             onSelectionChange={setSelectedStudents}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            pageCount={pageCount}
+            totalItems={totalItems}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={size => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
           />
         </CardContent>
       </Card>
