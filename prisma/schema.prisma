@@ -16,6 +16,7 @@ model User {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   accounts      Account[]
+  archives      Archive[]
   callHistories CallHistory[]
   pkSessions    PKSession[]
   pointRecords  PointRecord[]
@@ -84,9 +85,12 @@ model Student {
   avatar        String?
   notes         String?
   isArchived    Boolean              @default(false) @map("is_archived")
+  archiveId     String?              @map("archive_id") // 归档记录ID
+  archivedAt    DateTime?            @map("archived_at") // 归档时间
   createdAt     DateTime             @default(now()) @map("created_at")
   updatedAt     DateTime             @updatedAt @map("updated_at")
   userId        String               @map("user_id")
+  archive       Archive?             @relation(fields: [archiveId], references: [id], onDelete: SetNull)
   callHistories  CallHistory[]
   pkParticipants PKParticipant[]
   pointRecords   PointRecord[]
@@ -110,6 +114,9 @@ model StudentGroup {
   createdAt   DateTime             @default(now()) @map("created_at")
   updatedAt   DateTime             @updatedAt @map("updated_at")
   userId      String               @map("user_id")
+  archiveId   String?              @map("archive_id") // 归档记录ID
+  archivedAt  DateTime?            @map("archived_at") // 归档时间
+  archive     Archive?             @relation(fields: [archiveId], references: [id], onDelete: SetNull)
   members     StudentGroupMember[]
   pkParticipants PKParticipant[]
   user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -165,6 +172,9 @@ model PointRule {
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
   userId       String        @map("user_id")
+  archiveId    String?       @map("archive_id") // 归档记录ID
+  archivedAt   DateTime?     @map("archived_at") // 归档时间
+  archive      Archive?      @relation(fields: [archiveId], references: [id], onDelete: SetNull)
   pointRecords PointRecord[]
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -174,17 +184,20 @@ model PointRule {
 }
 
 model PointRecord {
-  id        String     @id @default(cuid())
-  points    Int
-  reason    String
-  type      PointType
-  createdAt DateTime   @default(now()) @map("created_at")
-  studentId String     @map("student_id")
-  userId    String     @map("user_id")
-  ruleId    String?    @map("rule_id")
-  rule      PointRule? @relation(fields: [ruleId], references: [id])
-  student   Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String     @id @default(cuid())
+  points     Int
+  reason     String
+  type       PointType
+  createdAt  DateTime   @default(now()) @map("created_at")
+  studentId  String     @map("student_id")
+  userId     String     @map("user_id")
+  ruleId     String?    @map("rule_id")
+  archiveId  String?    @map("archive_id") // 归档记录ID
+  archivedAt DateTime?  @map("archived_at") // 归档时间
+  archive    Archive?   @relation(fields: [archiveId], references: [id], onDelete: SetNull)
+  rule       PointRule? @relation(fields: [ruleId], references: [id])
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([userId])
@@ -205,6 +218,9 @@ model StoreItem {
   userId      String       @map("user_id")
   sortOrder   Int          @default(0) @map("sort_order")
   type        ItemType     @default(VIRTUAL)
+  archiveId   String?      @map("archive_id") // 归档记录ID
+  archivedAt  DateTime?    @map("archived_at") // 归档时间
+  archive     Archive?     @relation(fields: [archiveId], references: [id], onDelete: SetNull)
   redemptions Redemption[]
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -224,6 +240,9 @@ model Redemption {
   studentId   String           @map("student_id")
   itemId      String           @map("item_id")
   userId      String           @map("user_id")
+  archiveId   String?          @map("archive_id") // 归档记录ID
+  archivedAt  DateTime?        @map("archived_at") // 归档时间
+  archive     Archive?         @relation(fields: [archiveId], references: [id], onDelete: SetNull)
   item        StoreItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
   student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -273,6 +292,9 @@ model PKSession {
   finishedAt   DateTime?       @map("finished_at")
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
+  archiveId    String?         @map("archive_id") // 归档记录ID
+  archivedAt   DateTime?       @map("archived_at") // 归档时间
+  archive      Archive?        @relation(fields: [archiveId], references: [id], onDelete: SetNull)
   user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   participants PKParticipant[]
 
@@ -346,4 +368,42 @@ enum PKWinnerType {
 enum PKEntityType {
   STUDENT
   GROUP
+}
+
+// 归档类型枚举
+enum ArchiveType {
+  STUDENT           // 学生归档
+  POINT_RECORD      // 积分记录归档
+  REDEMPTION        // 兑换记录归档
+  POINT_RULE        // 积分规则归档
+  STORE_ITEM        // 商城商品归档
+  STUDENT_GROUP     // 学生分组归档
+  PK_SESSION        // PK会话归档
+}
+
+// 归档记录模型
+model Archive {
+  id          String      @id @default(cuid())
+  type        ArchiveType // 归档类型
+  reason      String?     // 归档原因
+  description String?     // 归档描述
+  itemCount   Int         @default(0) @map("item_count") // 归档项目数量
+  metadata    Json?       // 额外元数据(JSON格式,存储统计信息等)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  userId      String      @map("user_id")
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 关联的归档数据
+  students      Student[]
+  pointRecords  PointRecord[]
+  redemptions   Redemption[]
+  pointRules    PointRule[]
+  storeItems    StoreItem[]
+  studentGroups StudentGroup[]
+  pkSessions    PKSession[]
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("archives")
 }
