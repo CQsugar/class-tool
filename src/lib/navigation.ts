@@ -74,6 +74,10 @@ export const navGroups: NavGroup[] = [
             title: 'PK对战',
             url: '/pk',
           },
+          {
+            title: '课堂计时器',
+            url: '/timer',
+          },
         ],
       },
     ],
