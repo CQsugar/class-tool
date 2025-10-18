@@ -24,8 +24,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
       include: {
         pointRecords: {
+          include: {
+            rule: {
+              select: {
+                name: true,
+                category: true,
+              },
+            },
+          },
           orderBy: { createdAt: 'desc' },
-          take: 20,
+          take: 50, // 增加记录数量
         },
         groupMembers: {
           include: {

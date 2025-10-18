@@ -1,4 +1,4 @@
-import { RedemptionStatus } from '@prisma/client'
+import { Prisma, RedemptionStatus } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
@@ -23,14 +23,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
 
     // 构建查询条件
-    const where: {
-      userId: string
-      student?: { isArchived: boolean }
-      studentId?: string
-      itemId?: string
-      status?: string
-      createdAt?: { gte: Date; lte: Date }
-    } = {
+    const where: Prisma.RedemptionWhereInput = {
       userId: session.user.id,
       student: {
         isArchived: false, // 只显示未归档学生的兑换记录

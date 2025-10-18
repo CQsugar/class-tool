@@ -25,6 +25,9 @@ export async function GET(request: NextRequest) {
       sortOrder: searchParams.get('sortOrder'),
     }
 
+    const groupId = searchParams.get('groupId')
+    const tagId = searchParams.get('tagId')
+
     // 验证查询参数
     const { page, limit, search, gender, isArchived, sortBy, sortOrder } =
       studentQuerySchema.parse(queryData)
@@ -61,6 +64,24 @@ export async function GET(request: NextRequest) {
       where.gender = gender
     }
 
+    // 添加分组筛选
+    if (groupId) {
+      where.groupMembers = {
+        some: {
+          groupId,
+        },
+      }
+    }
+
+    // 添加标签筛选
+    if (tagId) {
+      where.tagRelations = {
+        some: {
+          tagId,
+        },
+      }
+    }
+
     // 计算分页
     const skip = (page - 1) * limit
 
@@ -70,10 +91,8 @@ export async function GET(request: NextRequest) {
       prisma.student.findMany({
         where,
         include: {
-          pointRecords: {
-            orderBy: { createdAt: 'desc' },
-            take: 5,
-          },
+          // 移除 pointRecords 以减少列表响应大小
+          // pointRecords 仅在详情页面加载
           groupMembers: {
             include: {
               group: true,

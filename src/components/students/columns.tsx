@@ -2,7 +2,7 @@
 
 import { Student } from '@prisma/client'
 import { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { ArrowUpDown, Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -20,11 +20,13 @@ import {
 interface StudentColumnProps {
   onEdit: (student: Student) => void
   onDelete: (student: Student) => void
+  onViewDetail: (student: Student) => void
 }
 
 export const createStudentColumns = ({
   onEdit,
   onDelete,
+  onViewDetail,
 }: StudentColumnProps): ColumnDef<Student>[] => [
   {
     id: 'select',
@@ -178,6 +180,15 @@ export const createStudentColumns = ({
               复制学生ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={e => {
+                e.stopPropagation()
+                onViewDetail(student)
+              }}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              查看详情
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={e => {
                 e.stopPropagation()

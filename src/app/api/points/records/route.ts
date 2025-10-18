@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { pointRecordQuerySchema } from '@/lib/validations/point-record'
+import { Prisma } from '@prisma/client'
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -45,14 +46,7 @@ export async function GET(request: NextRequest) {
     const { page, limit, studentId, type, startDate, endDate, search } = validationResult.data
 
     // 构建查询条件
-    const where: {
-      userId: string
-      student?: { isArchived: boolean }
-      studentId?: string
-      ruleId?: string
-      type?: string
-      createdAt?: { gte: Date; lte: Date }
-    } = {
+    const where: Prisma.PointRecordWhereInput = {
       userId,
       // 只查询未归档学生的记录
       student: {
@@ -65,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (type) {
-      where.type = type
+      where.type = type as 'ADD' | 'SUBTRACT' | 'RESET'
     }
 
     if (startDate || endDate) {

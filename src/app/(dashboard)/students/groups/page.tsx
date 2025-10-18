@@ -41,6 +41,7 @@ interface GroupStats {
 }
 
 export default function StudentGroupsPage() {
+  const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [groups, setGroups] = useState<StudentGroup[]>([])
   const [stats, setStats] = useState<GroupStats>({

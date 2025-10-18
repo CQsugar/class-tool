@@ -12,6 +12,7 @@ import { createStudentColumns } from '@/components/students/columns'
 import { DataTable } from '@/components/students/data-table'
 import { ExportStudentDialog } from '@/components/students/export-student-dialog'
 import { ImportStudentDialog } from '@/components/students/import-student-dialog'
+import { StudentDetailDialog } from '@/components/students/student-detail-dialog'
 import { StudentFormDialog } from '@/components/students/student-form-dialog'
 import {
   AlertDialog,
@@ -32,6 +33,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
@@ -46,6 +54,8 @@ export default function StudentsPage() {
   const [batchTagOpen, setBatchTagOpen] = useState(false)
   const [tagMode, setTagMode] = useState<'add' | 'remove'>('add')
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [viewingStudentId, setViewingStudentId] = useState<string | null>(null)
 
   // AlertDialog状态
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false)
@@ -58,6 +68,10 @@ export default function StudentsPage() {
   const [totalItems, setTotalItems] = useState(0)
   const [searchText, setSearchText] = useState('') // 输入框的值
   const [searchQuery, setSearchQuery] = useState('') // 实际查询的值
+  const [groupFilter, setGroupFilter] = useState<string>('all') // 分组过滤
+  const [tagFilter, setTagFilter] = useState<string>('all') // 标签过滤
+  const [groups, setGroups] = useState<Array<{ id: string; name: string }>>([])
+  const [tags, setTags] = useState<Array<{ id: string; name: string }>>([])
   const pageCount = Math.ceil(totalItems / pageSize)
 
   // 获取学生列表
@@ -72,6 +86,14 @@ export default function StudentsPage() {
 
       if (searchQuery.trim()) {
         params.append('search', searchQuery.trim())
+      }
+
+      if (groupFilter !== 'all') {
+        params.append('groupId', groupFilter)
+      }
+
+      if (tagFilter !== 'all') {
+        params.append('tagId', tagFilter)
       }
 
       const response = await fetch(`/api/students?${params}`)
@@ -106,10 +128,41 @@ export default function StudentsPage() {
     }
   }
 
+  // 加载分组列表
+  const fetchGroups = async () => {
+    try {
+      const response = await fetch('/api/students/groups')
+      if (response.ok) {
+        const data = await response.json()
+        setGroups(data.groups || [])
+      }
+    } catch (error) {
+      console.error('加载分组列表失败:', error)
+    }
+  }
+
+  // 加载标签列表
+  const fetchTags = async () => {
+    try {
+      const response = await fetch('/api/students/tags')
+      if (response.ok) {
+        const data = await response.json()
+        setTags(data.tags || [])
+      }
+    } catch (error) {
+      console.error('加载标签列表失败:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchGroups()
+    fetchTags()
+  }, [])
+
   useEffect(() => {
     fetchStudents()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, pageSize, searchQuery])
+  }, [currentPage, pageSize, searchQuery, groupFilter, tagFilter])
 
   // 编辑学生
   const handleEdit = (student: Student) => {
@@ -250,9 +303,16 @@ export default function StudentsPage() {
     setImportDialogOpen(true)
   }
 
+  // 查看详情
+  const handleViewDetail = (student: Student) => {
+    setViewingStudentId(student.id)
+    setDetailDialogOpen(true)
+  }
+
   const columns = createStudentColumns({
     onEdit: handleEdit,
     onDelete: handleDelete,
+    onViewDetail: handleViewDetail,
   })
 
   // 页面初始加载时显示全屏loading
@@ -332,6 +392,63 @@ export default function StudentsPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* 过滤器 */}
+          <div className="mb-4 flex items-center gap-4">
+            <Select
+              value={groupFilter}
+              onValueChange={value => {
+                setGroupFilter(value)
+                setCurrentPage(1)
+              }}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="选择分组" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部分组</SelectItem>
+                {groups.map(group => (
+                  <SelectItem key={group.id} value={group.id}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={tagFilter}
+              onValueChange={value => {
+                setTagFilter(value)
+                setCurrentPage(1)
+              }}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="选择标签" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部标签</SelectItem>
+                {tags.map(tag => (
+                  <SelectItem key={tag.id} value={tag.id}>
+                    {tag.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {(groupFilter !== 'all' || tagFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setGroupFilter('all')
+                  setTagFilter('all')
+                  setCurrentPage(1)
+                }}
+              >
+                清除过滤
+              </Button>
+            )}
+          </div>
+
           <DataTable
             columns={columns}
             data={students}
@@ -448,6 +565,13 @@ export default function StudentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 学生详情对话框 */}
+      <StudentDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        studentId={viewingStudentId}
+      />
     </div>
   )
 }

@@ -32,6 +32,7 @@ interface TagStats {
 }
 
 export default function StudentTagsPage() {
+  const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [tags, setTags] = useState<StudentTag[]>([])
   const [stats, setStats] = useState<TagStats>({
