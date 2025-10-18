@@ -13,7 +13,16 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Clock, Loader2, RefreshCw, User, Users } from 'lucide-react'
+import {
+  AlertCircle,
+  Clock,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  RefreshCw,
+  User,
+  Users,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -43,6 +52,7 @@ export default function CallPage() {
   const [avoidHours, setAvoidHours] = useState('24')
   const [history, setHistory] = useState<CallHistoryItem[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [stats, setStats] = useState({
     totalAvailable: 0,
     totalExcluded: 0,
@@ -125,17 +135,46 @@ export default function CallPage() {
     handleRandomCall()
   }
 
-  return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-      {/* 页面标题 */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">随机点名</h1>
-        <p className="text-muted-foreground">随机选择学生，支持24小时避重机制</p>
-      </div>
+  // 切换全屏
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true)
+      })
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false)
+      })
+    }
+  }
 
-      <div className="grid gap-6 lg:grid-cols-3">
+  // 监听全屏变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
+
+  return (
+    <div
+      className={`flex flex-1 flex-col gap-6 p-4 pt-0 ${isFullscreen ? 'bg-background fixed inset-0 z-50 p-8' : ''}`}
+    >
+      {/* 页面标题 */}
+      {!isFullscreen && (
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">随机点名</h1>
+          <p className="text-muted-foreground">随机选择学生，支持24小时避重机制</p>
+        </div>
+      )}
+
+      <div className={`grid gap-6 ${isFullscreen ? 'grid-cols-1' : 'lg:grid-cols-3'}`}>
         {/* 主要点名区域 */}
-        <div className="lg:col-span-2">
+        <div className={isFullscreen ? '' : 'lg:col-span-2'}>
           <Card>
             <CardHeader>
               <CardTitle>开始点名</CardTitle>
@@ -143,29 +182,33 @@ export default function CallPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* 避重设置 */}
-              <div className="space-y-2">
-                <Label>避重时间</Label>
-                <Select value={avoidHours} onValueChange={setAvoidHours} disabled={isRolling}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">不启用避重</SelectItem>
-                    <SelectItem value="1">1 小时</SelectItem>
-                    <SelectItem value="6">6 小时</SelectItem>
-                    <SelectItem value="12">12 小时</SelectItem>
-                    <SelectItem value="24">24 小时</SelectItem>
-                    <SelectItem value="48">48 小时</SelectItem>
-                    <SelectItem value="72">72 小时</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-muted-foreground text-xs">
-                  在设定时间内，已点过名的学生不会被重复点到
-                </p>
-              </div>
+              {!isFullscreen && (
+                <div className="space-y-2">
+                  <Label>避重时间</Label>
+                  <Select value={avoidHours} onValueChange={setAvoidHours} disabled={isRolling}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">不启用避重</SelectItem>
+                      <SelectItem value="1">1 小时</SelectItem>
+                      <SelectItem value="6">6 小时</SelectItem>
+                      <SelectItem value="12">12 小时</SelectItem>
+                      <SelectItem value="24">24 小时</SelectItem>
+                      <SelectItem value="48">48 小时</SelectItem>
+                      <SelectItem value="72">72 小时</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-muted-foreground text-xs">
+                    在设定时间内，已点过名的学生不会被重复点到
+                  </p>
+                </div>
+              )}
 
               {/* 点名结果显示区域 */}
-              <div className="border-primary/20 from-primary/5 to-background flex min-h-[300px] flex-col items-center justify-center rounded-lg border-2 border-dashed bg-gradient-to-br p-8">
+              <div
+                className={`border-primary/20 from-primary/5 to-background flex flex-col items-center justify-center rounded-lg border-2 border-dashed bg-gradient-to-br p-8 ${isFullscreen ? 'min-h-[600px]' : 'min-h-[300px]'}`}
+              >
                 <AnimatePresence mode="wait">
                   {isRolling ? (
                     <motion.div
@@ -194,15 +237,19 @@ export default function CallPage() {
                     >
                       {/* 学生头像 */}
                       <div className="relative">
-                        <div className="bg-primary/10 ring-primary/30 flex h-32 w-32 items-center justify-center rounded-full ring-4 ring-offset-4">
+                        <div
+                          className={`bg-primary/10 ring-primary/30 flex items-center justify-center rounded-full ring-4 ring-offset-4 ${isFullscreen ? 'h-48 w-48' : 'h-32 w-32'}`}
+                        >
                           {selectedStudent.avatar ? (
                             <img
                               src={selectedStudent.avatar}
                               alt={selectedStudent.name}
-                              className="h-32 w-32 rounded-full object-cover"
+                              className={`rounded-full object-cover ${isFullscreen ? 'h-48 w-48' : 'h-32 w-32'}`}
                             />
                           ) : (
-                            <span className="text-primary text-5xl font-bold">
+                            <span
+                              className={`text-primary font-bold ${isFullscreen ? 'text-8xl' : 'text-5xl'}`}
+                            >
                               {selectedStudent.name.charAt(0)}
                             </span>
                           )}
@@ -211,9 +258,9 @@ export default function CallPage() {
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           transition={{ delay: 0.3, type: 'spring' }}
-                          className="bg-primary absolute -right-2 -bottom-2 flex h-12 w-12 items-center justify-center rounded-full shadow-lg"
+                          className={`bg-primary absolute -right-2 -bottom-2 flex items-center justify-center rounded-full shadow-lg ${isFullscreen ? 'h-16 w-16' : 'h-12 w-12'}`}
                         >
-                          <User className="h-6 w-6 text-white" />
+                          <User className={`text-white ${isFullscreen ? 'h-8 w-8' : 'h-6 w-6'}`} />
                         </motion.div>
                       </div>
 
@@ -223,7 +270,7 @@ export default function CallPage() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
-                          className="mb-2 text-4xl font-bold"
+                          className={`mb-2 font-bold ${isFullscreen ? 'text-7xl' : 'text-4xl'}`}
                         >
                           {selectedStudent.name}
                         </motion.h2>
@@ -320,74 +367,89 @@ export default function CallPage() {
                     重新点名
                   </Button>
                 )}
+                <Button onClick={toggleFullscreen} variant="outline" size="lg">
+                  {isFullscreen ? (
+                    <>
+                      <Minimize2 className="mr-2 h-5 w-5" />
+                      退出全屏
+                    </>
+                  ) : (
+                    <>
+                      <Maximize2 className="mr-2 h-5 w-5" />
+                      全屏显示
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* 点名历史 */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>点名历史</CardTitle>
-              <CardDescription>最近10次点名记录</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingHistory ? (
-                <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="flex items-center gap-3">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="flex-1 space-y-1">
-                        <Skeleton className="h-4 w-20" />
-                        <Skeleton className="h-3 w-16" />
+        {!isFullscreen && (
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>点名历史</CardTitle>
+                <CardDescription>最近10次点名记录</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loadingHistory ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div key={i} className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="flex-1 space-y-1">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-3 w-16" />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : history.length === 0 ? (
-                <div className="text-muted-foreground flex flex-col items-center justify-center py-8 text-center text-sm">
-                  <Clock className="mb-2 h-8 w-8 opacity-50" />
-                  <p>还没有点名记录</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {history.map(item => (
-                    <div
-                      key={item.id}
-                      className="hover:bg-muted/50 flex items-center gap-3 rounded-lg p-2 transition-colors"
-                    >
-                      <div className="bg-muted flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
-                        {item.student?.avatar ? (
-                          <img
-                            src={item.student.avatar}
-                            alt={item.student.name}
-                            className="h-10 w-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-muted-foreground text-sm font-medium">
-                            {item.student?.name.charAt(0)}
-                          </span>
-                        )}
+                    ))}
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="text-muted-foreground flex flex-col items-center justify-center py-8 text-center text-sm">
+                    <Clock className="mb-2 h-8 w-8 opacity-50" />
+                    <p>还没有点名记录</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {history.map(item => (
+                      <div
+                        key={item.id}
+                        className="hover:bg-muted/50 flex items-center gap-3 rounded-lg p-2 transition-colors"
+                      >
+                        <div className="bg-muted flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
+                          {item.student?.avatar ? (
+                            <img
+                              src={item.student.avatar}
+                              alt={item.student.name}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-muted-foreground text-sm font-medium">
+                              {item.student?.name.charAt(0)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                          <p className="truncate font-medium">{item.student?.name}</p>
+                          <p className="text-muted-foreground truncate text-xs">
+                            {new Date(item.calledAt).toLocaleString('zh-CN', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 overflow-hidden">
-                        <p className="truncate font-medium">{item.student?.name}</p>
-                        <p className="text-muted-foreground truncate text-xs">
-                          {new Date(item.calledAt).toLocaleString('zh-CN', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   )
