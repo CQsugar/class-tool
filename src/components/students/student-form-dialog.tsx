@@ -5,6 +5,7 @@ import { Gender, Student } from '@prisma/client'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
+import { AvatarUpload } from '@/components/ui/avatar-upload'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -207,17 +208,19 @@ export function StudentFormDialog({
               />
             </div>
 
-            {/* 头像URL */}
+            {/* 头像上传 */}
             <FormField
               control={form.control}
               name="avatar"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>头像URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="请输入头像URL" {...field} />
+                    <AvatarUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={form.formState.isSubmitting}
+                    />
                   </FormControl>
-                  <FormDescription>可选，输入图片链接地址</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
