@@ -170,6 +170,7 @@ export default function TimerPage() {
         intervalRef.current = null
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRunning, isPaused, mode])
 
   // 计算进度百分比(倒计时)
