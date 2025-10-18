@@ -35,13 +35,34 @@ export const applyRuleSchema = z.object({
  * 积分记录查询 schema
  */
 export const pointRecordQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce.number().int().positive().max(100).default(20),
-  studentId: z.string().cuid().optional(),
-  type: z.nativeEnum(PointType).optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
-  search: z.string().optional(),
+  page: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '1' : val),
+    z.coerce.number().int().positive()
+  ),
+  pageSize: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '20' : val),
+    z.coerce.number().int().positive().max(100)
+  ),
+  studentId: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.string().cuid().optional()
+  ),
+  type: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.nativeEnum(PointType).optional()
+  ),
+  startDate: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.string().datetime().optional()
+  ),
+  endDate: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.string().datetime().optional()
+  ),
+  search: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.string().optional()
+  ),
 })
 
 // TypeScript 类型导出

@@ -33,14 +33,38 @@ export const updatePointRuleSchema = pointRuleSchema.partial()
  * 积分规则查询参数验证Schema
  */
 export const pointRuleQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
-  search: z.string().optional(),
-  type: z.nativeEnum(PointType).optional(),
-  category: z.string().optional(),
-  isActive: z.coerce.boolean().optional(),
-  sortBy: z.enum(['name', 'points', 'createdAt', 'updatedAt']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  page: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '1' : val),
+    z.coerce.number().int().positive()
+  ),
+  limit: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '20' : val),
+    z.coerce.number().int().positive().max(100)
+  ),
+  search: z.preprocess(
+    val => (val === null || val === '' ? undefined : val),
+    z.string().optional()
+  ),
+  type: z.preprocess(
+    val => (val === null || val === '' ? undefined : val),
+    z.nativeEnum(PointType).optional()
+  ),
+  category: z.preprocess(
+    val => (val === null || val === '' ? undefined : val),
+    z.string().optional()
+  ),
+  isActive: z.preprocess(
+    val => (val === null || val === '' ? undefined : val),
+    z.coerce.boolean().optional()
+  ),
+  sortBy: z.preprocess(
+    val => (val === null || val === '' ? 'createdAt' : val),
+    z.enum(['name', 'points', 'createdAt', 'updatedAt'])
+  ),
+  sortOrder: z.preprocess(
+    val => (val === null || val === '' ? 'desc' : val),
+    z.enum(['asc', 'desc'])
+  ),
 })
 
 /**

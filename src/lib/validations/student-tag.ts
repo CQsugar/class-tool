@@ -14,9 +14,18 @@ export const updateStudentTagSchema = studentTagSchema.partial()
 
 // 查询标签Schema
 export const studentTagQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce.number().int().positive().max(100).default(50),
-  search: z.string().optional(),
+  page: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '1' : val),
+    z.coerce.number().int().positive()
+  ),
+  pageSize: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '50' : val),
+    z.coerce.number().int().positive().max(100)
+  ),
+  search: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.string().optional()
+  ),
 })
 
 // 添加学生到标签Schema
@@ -46,9 +55,18 @@ export const removeTagsFromStudentsSchema = z.object({
 // 按标签筛选学生Schema
 export const filterStudentsByTagsSchema = z.object({
   tagIds: z.array(z.string()).min(1, '至少选择一个标签').max(10, '一次最多筛选10个标签'),
-  matchMode: z.enum(['any', 'all']).default('any'), // any: 任意标签匹配, all: 所有标签都匹配
-  page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce.number().int().positive().max(100).default(50),
+  matchMode: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? 'any' : val),
+    z.enum(['any', 'all'])
+  ),
+  page: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '1' : val),
+    z.coerce.number().int().positive()
+  ),
+  pageSize: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '50' : val),
+    z.coerce.number().int().positive().max(100)
+  ),
 })
 
 // TypeScript类型导出

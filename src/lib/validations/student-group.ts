@@ -29,10 +29,24 @@ export const updateStudentGroupSchema = studentGroupSchema.partial()
  * 分组查询 schema
  */
 export const studentGroupQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce.number().int().positive().max(100).default(20),
-  search: z.string().optional(),
-  isArchived: z.coerce.boolean().optional(),
+  page: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '1' : val),
+    z.coerce.number().int().positive()
+  ),
+  pageSize: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '20' : val),
+    z.coerce.number().int().positive().max(100)
+  ),
+  search: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.string().optional()
+  ),
+  isArchived: z.preprocess(val => {
+    if (val === null || val === undefined || val === '') return undefined
+    if (val === 'true') return true
+    if (val === 'false') return false
+    return val
+  }, z.boolean().optional()),
 })
 
 /**

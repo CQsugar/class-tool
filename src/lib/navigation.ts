@@ -1,5 +1,4 @@
 import {
-  Book,
   CircleStar,
   GraduationCap,
   LucideLayoutDashboard,
@@ -38,18 +37,22 @@ export const navGroups: NavGroup[] = [
         icon: LucideLayoutDashboard,
       },
       {
-        title: '班级管理',
+        title: '学生管理',
         url: '#',
         icon: GraduationCap,
         isActive: true,
         items: [
           {
-            title: '学生管理',
+            title: '学生列表',
             url: '/students',
           },
           {
             title: '分组管理',
-            url: '/groups',
+            url: '/students/groups',
+          },
+          {
+            title: '标签管理',
+            url: '/students/tags',
           },
         ],
       },
@@ -61,18 +64,13 @@ export const navGroups: NavGroup[] = [
         items: [
           {
             title: '随机点名',
-            url: '/dashboard/call',
+            url: '/call',
           },
           {
             title: 'PK对战',
-            url: '/dashboard/pk',
+            url: '/pk',
           },
         ],
-      },
-      {
-        title: '统计报表',
-        url: '/analytics',
-        icon: Book,
       },
     ],
   },
@@ -80,9 +78,20 @@ export const navGroups: NavGroup[] = [
     groupLabel: '积分系统',
     items: [
       {
-        title: '积分设置',
-        url: '/points',
+        title: '积分管理',
+        url: '#',
         icon: CircleStar,
+        isActive: true,
+        items: [
+          {
+            title: '积分规则',
+            url: '/points',
+          },
+          {
+            title: '积分记录',
+            url: '/points/records',
+          },
+        ],
       },
       {
         title: '积分商城',

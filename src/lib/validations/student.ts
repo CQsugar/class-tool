@@ -42,16 +42,31 @@ export const updateStudentSchema = studentSchema.partial()
  * 学生查询参数验证Schema
  */
 export const studentQuerySchema = z.object({
-  page: z.coerce.number().int().positive().optional().default(1),
-  limit: z.coerce.number().int().positive().max(100).optional().default(20),
-  search: z.string().optional().nullable().default(null),
-  gender: z.nativeEnum(Gender).optional().nullable().default(null),
-  isArchived: z.coerce.boolean().optional().nullable().default(false),
-  sortBy: z
-    .enum(['name', 'studentNo', 'points', 'createdAt', 'updatedAt'])
-    .optional()
-    .default('points'),
-  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+  page: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '1' : val),
+    z.coerce.number().int().positive()
+  ),
+  limit: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? '20' : val),
+    z.coerce.number().int().positive().max(100)
+  ),
+  search: z.preprocess(
+    val => (val === null || val === '' ? undefined : val),
+    z.string().optional()
+  ),
+  gender: z.preprocess(
+    val => (val === null || val === '' ? undefined : val),
+    z.nativeEnum(Gender).optional()
+  ),
+  isArchived: z.preprocess(val => (val === null || val === '' ? 'false' : val), z.coerce.boolean()),
+  sortBy: z.preprocess(
+    val => (val === null || val === '' ? 'points' : val),
+    z.enum(['name', 'studentNo', 'points', 'createdAt', 'updatedAt'])
+  ),
+  sortOrder: z.preprocess(
+    val => (val === null || val === '' ? 'desc' : val),
+    z.enum(['asc', 'desc'])
+  ),
 })
 
 /**

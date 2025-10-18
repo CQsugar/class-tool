@@ -18,7 +18,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <AppSidebar />
       <SidebarInset>
         <DashboardHeader />
-        <div className="container mx-auto">{children}</div>
+        <div className="container mx-auto">
+          <div className="mx-2">{children}</div>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
