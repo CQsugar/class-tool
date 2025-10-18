@@ -21,13 +21,18 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         color: true,
+        _count: {
+          select: {
+            members: true,
+          },
+        },
       },
       orderBy: {
         name: 'asc',
       },
     })
 
-    return NextResponse.json({ groups })
+    return NextResponse.json({ data: groups })
   } catch (error) {
     console.error('获取分组列表失败:', error)
 

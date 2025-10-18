@@ -20,13 +20,18 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         color: true,
+        _count: {
+          select: {
+            relations: true,
+          },
+        },
       },
       orderBy: {
         name: 'asc',
       },
     })
 
-    return NextResponse.json({ tags })
+    return NextResponse.json({ data: tags })
   } catch (error) {
     console.error('获取标签列表失败:', error)
 

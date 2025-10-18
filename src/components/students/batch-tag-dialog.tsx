@@ -60,7 +60,7 @@ export function BatchTagDialog({
 
   const loadTags = async () => {
     try {
-      const response = await fetch('/api/students/tags')
+      const response = await fetch('/api/students/tags/list')
       if (!response.ok) throw new Error('加载标签失败')
 
       const data = await response.json()
