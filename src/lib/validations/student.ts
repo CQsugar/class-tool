@@ -71,10 +71,13 @@ export const studentQuerySchema = z.object({
     val => (val === null || val === '' ? undefined : val),
     z.nativeEnum(Gender).optional()
   ),
-  isArchived: z.preprocess(
-    val => (val === null || val === undefined || val === '' ? undefined : val),
-    z.coerce.boolean().optional()
-  ),
+  isArchived: z.preprocess(val => {
+    if (val === null || val === undefined || val === '') return undefined
+    // 处理字符串 "true" 和 "false"
+    if (val === 'true') return true
+    if (val === 'false') return false
+    return val
+  }, z.boolean().optional()),
   sortBy: z.preprocess(
     val => (val === null || val === '' ? 'points' : val),
     z.enum(['name', 'studentNo', 'points', 'createdAt', 'updatedAt'])
