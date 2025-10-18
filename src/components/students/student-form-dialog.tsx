@@ -43,7 +43,7 @@ const formSchema = z.object({
   gender: z.nativeEnum(Gender),
   phone: z.string().optional(),
   parentPhone: z.string().optional(),
-  avatar: z.string().optional(),
+  avatar: z.union([z.string(), z.instanceof(File)]).optional(),
   notes: z.string().optional(),
 })
 
@@ -106,28 +106,69 @@ export function StudentFormDialog({
 
   async function onSubmit(values: FormValues) {
     try {
-      const url = isEdit ? `/api/students/${student.id}` : '/api/students'
-      const method = isEdit ? 'PATCH' : 'POST'
+      // 处理头像上传：如果 avatar 是 File 对象，先上传获取 URL
+      let avatarUrl = values.avatar
+      if (values.avatar && typeof values.avatar !== 'string') {
+        const formData = new FormData()
+        formData.append('file', values.avatar)
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('头像上传失败')
+        }
+
+        const uploadResult = await uploadResponse.json()
+        avatarUrl = uploadResult.url
+      }
+
+      // 准备提交数据，使用上传后的 URL
+      const submitData = {
+        ...values,
+        avatar: avatarUrl,
+      }
+
+      const url = student ? `/api/students/${student.id}` : '/api/students'
+      const method = student ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(submitData),
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || '操作失败')
+        let errorMessage = '操作失败'
+        try {
+          const error = await response.json()
+          errorMessage = error.error || error.message || errorMessage
+        } catch {
+          // 如果响应不是 JSON 格式，使用状态文本
+          errorMessage = response.statusText || errorMessage
+        }
+        throw new Error(errorMessage)
       }
 
-      toast.success(isEdit ? '学生信息已更新' : '学生已添加')
+      await response.json()
+      toast.success(student ? '学生信息已更新' : '学生已添加')
+
+      // 刷新列表
+      if (onSuccess) {
+        onSuccess()
+      }
+
+      // 关闭对话框
       onOpenChange(false)
+
+      // 重置表单
       form.reset()
-      onSuccess?.()
     } catch (error) {
-      console.error('提交表单失败:', error)
+      console.error('Error submitting form:', error)
       toast.error(error instanceof Error ? error.message : '操作失败')
     }
   }

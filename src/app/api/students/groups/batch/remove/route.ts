@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 批量删除关联
-    const result = await prisma.groupMember.deleteMany({
+    const result = await prisma.studentGroupMember.deleteMany({
       where: {
         studentId: { in: studentIds },
         groupId: { in: groupIds },

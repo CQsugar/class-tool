@@ -11,7 +11,7 @@ export const studentSchema = z.object({
     .min(1, '学号不能为空')
     .max(20, '学号不能超过20个字符')
     .regex(/^[a-zA-Z0-9]+$/, '学号只能包含字母和数字'),
-  gender: z.nativeEnum(Gender, {
+  gender: z.enum(Gender, {
     message: '性别必须是 MALE 或 FEMALE',
   }),
   phone: z
@@ -61,7 +61,7 @@ export const studentQuerySchema = z.object({
   ),
   limit: z.preprocess(
     val => (val === null || val === undefined || val === '' ? '20' : val),
-    z.coerce.number().int().positive().max(100)
+    z.coerce.number().int().positive().max(1000)
   ),
   search: z.preprocess(
     val => (val === null || val === '' ? undefined : val),
@@ -92,14 +92,14 @@ export const studentQuerySchema = z.object({
  * 批量操作验证Schema
  */
 export const batchStudentSchema = z.object({
-  studentIds: z.array(z.string().cuid()).min(1, '至少选择一个学生'),
+  studentIds: z.array(z.cuid()).min(1, '至少选择一个学生'),
 })
 
 /**
  * 学生归档验证Schema
  */
 export const archiveStudentSchema = z.object({
-  studentIds: z.array(z.string().cuid()).min(1, '至少选择一个学生'),
+  studentIds: z.array(z.cuid()).min(1, '至少选择一个学生'),
   isArchived: z.boolean(),
 })
 
@@ -110,7 +110,7 @@ export const importStudentSchema = z.array(
   z.object({
     name: z.string().min(1),
     studentNo: z.string().min(1),
-    gender: z.nativeEnum(Gender),
+    gender: z.enum(Gender),
     phone: z.string().optional(),
     parentPhone: z.string().optional(),
     notes: z.string().optional(),

@@ -109,10 +109,9 @@ export function RedeemDialog({ open, onOpenChange, item, student, onSuccess }: R
           {/* 商品信息 */}
           <div className="flex gap-4 rounded-lg border p-4">
             {item.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={item.image} alt={item.name} className="h-24 w-24 rounded-md object-cover" />
             ) : (
-              <div className="bg-muted flex h-24 w-24 items-center justify-center rounded-md">
+              <div className="bg-muted flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-md">
                 <Icon className="text-muted-foreground h-10 w-10" />
               </div>
             )}

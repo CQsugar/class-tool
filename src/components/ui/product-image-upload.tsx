@@ -11,12 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ImageIcon, X } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface ProductImageUploadProps {
-  value?: string | null
+  value?: string | File | null
   onChange: (url: string | File) => void // 支持传递 File 对象或 URL 字符串
   disabled?: boolean
   label?: string
@@ -38,6 +37,15 @@ export function ProductImageUpload({
       setPreview(value || null)
       setUrlInput(value || '')
       setPendingFile(null)
+    } else if (value instanceof File) {
+      // 如果传入的是 File 对象，创建预览
+      const reader = new FileReader()
+      reader.onload = e => {
+        setPreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(value)
+      setPendingFile(value)
+      setUrlInput('')
     }
   }, [value])
 
@@ -93,7 +101,7 @@ export function ProductImageUpload({
         {/* 图片预览 */}
         <div className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
           {preview ? (
-            <Image src={preview} alt="商品图片" fill className="object-cover" />
+            <img src={preview} alt="商品图片" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <ImageIcon className="h-12 w-12 text-muted-foreground" />

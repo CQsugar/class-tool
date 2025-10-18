@@ -108,6 +108,10 @@ export const navGroups: NavGroup[] = [
             url: '/store',
           },
           {
+            title: '商品兑换',
+            url: '/store/redeem',
+          },
+          {
             title: '兑换记录',
             url: '/store/redemptions',
           },

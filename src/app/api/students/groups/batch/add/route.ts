@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     for (const membership of memberships) {
       try {
-        await prisma.groupMember.create({
+        await prisma.studentGroupMember.create({
           data: membership,
         })
         addedCount++

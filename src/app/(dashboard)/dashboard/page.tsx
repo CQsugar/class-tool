@@ -1,6 +1,4 @@
-import { Leaderboard } from '@/components/dashboard/leaderboard'
-import { OverviewStats } from '@/components/dashboard/overview-stats'
-import { QuickPointsPanel } from '@/components/dashboard/quick-points-panel'
+import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Metadata } from 'next'
@@ -47,17 +45,8 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">欢迎回来,{session.user.name}!查看您的班级管理概况</p>
       </div>
 
-      {/* 数据概览统计卡片 */}
-      <OverviewStats />
-
-      {/* 主要功能区域 */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* 快速积分操作面板 */}
-        <QuickPointsPanel students={students} />
-
-        {/* 积分排行榜 */}
-        <Leaderboard />
-      </div>
+      {/* Dashboard 客户端组件（包含统计卡片、快速积分、排行榜）*/}
+      <DashboardClient students={students} />
     </div>
   )
 }

@@ -24,6 +24,8 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      // 允许使用原生 img 标签（用于上传文件的显示）
+      '@next/next/no-img-element': 'off',
     },
   },
 ]

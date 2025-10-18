@@ -75,9 +75,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 /**
- * PATCH /api/students/[id] - 更新学生信息
+ * PATCH /api/students/[id] - 更新学生信息（部分更新）
+ * PUT /api/students/[id] - 更新学生信息（完整更新）
  */
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function updateStudent(request: NextRequest, params: Promise<{ id: string }>) {
   try {
     // 验证用户认证
     const { user } = await requireAuth(request)
@@ -173,6 +174,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return NextResponse.json({ error: '更新学生失败' }, { status: 500 })
   }
+}
+
+/**
+ * PATCH /api/students/[id] - 部分更新学生信息
+ */
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  return updateStudent(request, params)
+}
+
+/**
+ * PUT /api/students/[id] - 完整更新学生信息
+ */
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  return updateStudent(request, params)
 }
 
 /**

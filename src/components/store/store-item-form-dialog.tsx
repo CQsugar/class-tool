@@ -36,10 +36,10 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  createStoreItemSchema,
-  updateStoreItemSchema,
-  type CreateStoreItemInput,
-  type UpdateStoreItemInput,
+  createStoreItemFormSchema,
+  updateStoreItemFormSchema,
+  type CreateStoreItemFormInput,
+  type UpdateStoreItemFormInput,
 } from '@/lib/validations/store'
 
 interface StoreItem {
@@ -71,8 +71,8 @@ export function StoreItemFormDialog({
   const [loading, setLoading] = useState(false)
   const [useStock, setUseStock] = useState(item?.stock !== null)
 
-  const form = useForm<CreateStoreItemInput | UpdateStoreItemInput>({
-    resolver: zodResolver(isEdit ? updateStoreItemSchema : createStoreItemSchema),
+  const form = useForm<CreateStoreItemFormInput | UpdateStoreItemFormInput>({
+    resolver: zodResolver(isEdit ? updateStoreItemFormSchema : createStoreItemFormSchema),
     defaultValues: item
       ? {
           name: item.name,
@@ -125,13 +125,34 @@ export function StoreItemFormDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, item])
 
-  const onSubmit = async (data: CreateStoreItemInput | UpdateStoreItemInput) => {
+  const onSubmit = async (data: CreateStoreItemFormInput | UpdateStoreItemFormInput) => {
     try {
       setLoading(true)
+
+      // 处理图片上传
+      let imageUrl = data.image
+      if (data.image && typeof data.image !== 'string') {
+        // 如果 image 是 File 对象,先上传
+        const formData = new FormData()
+        formData.append('file', data.image as File)
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('图片上传失败')
+        }
+
+        const uploadResult = await uploadResponse.json()
+        imageUrl = uploadResult.url
+      }
 
       // 如果不使用库存管理，设置stock为null
       const submitData = {
         ...data,
+        image: imageUrl,
         stock: useStock ? data.stock : null,
       }
 

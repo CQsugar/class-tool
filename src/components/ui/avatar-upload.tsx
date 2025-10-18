@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface AvatarUploadProps {
-  value?: string
+  value?: string | File
   onChange: (url: string | File) => void // 支持传递 File 对象或 URL 字符串
   disabled?: boolean
 }
@@ -32,6 +32,15 @@ export function AvatarUpload({ value, onChange, disabled }: AvatarUploadProps) {
       setPreview(value || null)
       setUrlInput(value || '')
       setPendingFile(null)
+    } else if (value instanceof File) {
+      // 如果传入的是 File 对象，创建预览
+      const reader = new FileReader()
+      reader.onload = e => {
+        setPreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(value)
+      setPendingFile(value)
+      setUrlInput('')
     }
   }, [value])
 

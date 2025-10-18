@@ -223,7 +223,6 @@ export default function StoreStatsPage() {
                         {index + 1}
                       </div>
                       {item.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={item.image}
                           alt={item.name}

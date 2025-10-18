@@ -218,7 +218,6 @@ export default function RedemptionsPage() {
                       <div className="flex items-start gap-4">
                         {/* 商品图片 */}
                         {redemption.item.image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={redemption.item.image}
                             alt={redemption.item.name}
