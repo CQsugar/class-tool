@@ -234,6 +234,10 @@ export default function StoreItemsPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {items.map(item => {
                 const Icon = TYPE_ICONS[item.type]
+                // 获取商品名称首字母
+                const getInitial = (name: string) => {
+                  return name.charAt(0).toUpperCase()
+                }
                 return (
                   <Card key={item.id} className={!item.isActive ? 'opacity-60' : ''}>
                     <CardContent className="p-4">
@@ -246,8 +250,8 @@ export default function StoreItemsPage() {
                             className="h-20 w-20 rounded-md object-cover"
                           />
                         ) : (
-                          <div className="bg-muted flex h-20 w-20 items-center justify-center rounded-md">
-                            <Icon className="text-muted-foreground h-8 w-8" />
+                          <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center rounded-md text-2xl font-bold">
+                            {getInitial(item.name)}
                           </div>
                         )}
                         <div className="flex-1 space-y-2">

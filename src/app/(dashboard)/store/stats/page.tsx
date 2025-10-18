@@ -275,8 +275,8 @@ export default function StoreStatsPage() {
                       {index + 1}
                     </div>
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={student.avatar || undefined} />
-                      <AvatarFallback>{student.name[0]}</AvatarFallback>
+                      <AvatarImage src={student.avatar || undefined} alt={student.name} />
+                      <AvatarFallback>{student.name.slice(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{student.name}</p>

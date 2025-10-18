@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Archive, FolderOpen, Loader2, Plus, Users } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface GroupMember {
@@ -41,7 +41,7 @@ interface GroupStats {
 }
 
 export default function StudentGroupsPage() {
-  const [loading, setLoading] = useState(true)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [groups, setGroups] = useState<StudentGroup[]>([])
   const [stats, setStats] = useState<GroupStats>({
     total: 0,
@@ -56,21 +56,54 @@ export default function StudentGroupsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [groupToDelete, setGroupToDelete] = useState<StudentGroup | null>(null)
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [pageCount, setPageCount] = useState(1)
+  const [searchText, setSearchText] = useState('') // 输入框的值
+  const [search, setSearch] = useState('') // 实际查询的值
+
   useEffect(() => {
     loadGroups()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, search])
+
+  // 防抖搜索：输入停止500ms后才触发搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchText)
+      setCurrentPage(1)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchText])
 
   const loadGroups = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/students/groups')
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      })
+
+      if (search) params.append('search', search)
+
+      const response = await fetch(`/api/students/groups?${params}`)
       if (!response.ok) throw new Error('加载分组失败')
 
       const data = await response.json()
-      setGroups(data.data || [])
+      // 修复字段映射：API返回isArchived，组件期望archived
+      const mappedGroups = (data.groups || []).map(
+        (group: { isArchived: boolean; [key: string]: unknown }) => ({
+          ...group,
+          archived: group.isArchived,
+        })
+      )
+      setGroups(mappedGroups)
+      setPageCount(data.pagination?.pageCount || 1)
 
       // 计算统计数据
-      const allGroups = data.data || []
+      const allGroups = mappedGroups
       const active = allGroups.filter((g: StudentGroup) => !g.archived)
       const archived = allGroups.filter((g: StudentGroup) => g.archived)
       const totalMembers = allGroups.reduce(
@@ -89,8 +122,13 @@ export default function StudentGroupsPage() {
       toast.error('加载分组失败')
     } finally {
       setLoading(false)
+      setInitialLoading(false)
     }
   }
+
+  const handleSearch = useCallback((value: string) => {
+    setSearchText(value) // 更新输入框的值，防抖逻辑会自动处理
+  }, [])
 
   const handleCreate = () => {
     setEditingGroup(null)
@@ -225,12 +263,24 @@ export default function StudentGroupsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {initialLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
             </div>
           ) : (
-            <StudentGroupDataTable columns={enhancedColumns} data={groups} />
+            <StudentGroupDataTable
+              columns={enhancedColumns}
+              data={groups}
+              onSearch={handleSearch}
+              pageCount={pageCount}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={size => {
+                setPageSize(size)
+                setCurrentPage(1)
+              }}
+            />
           )}
         </CardContent>
       </Card>

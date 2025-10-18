@@ -2,8 +2,18 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -11,8 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Minus, Plus, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { cn } from '@/lib/utils'
+import { PointType } from '@prisma/client'
+import { Check, ChevronsUpDown, Clipboard, Minus, Plus, Zap } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface Student {
@@ -20,6 +32,14 @@ interface Student {
   name: string
   studentNo: string
   points: number
+}
+
+interface PointRule {
+  id: string
+  name: string
+  points: number
+  type: PointType
+  category: string
 }
 
 interface QuickPointsPanelProps {
@@ -32,6 +52,46 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
   const [points, setPoints] = useState<string>('')
   const [reason, setReason] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [rules, setRules] = useState<PointRule[]>([])
+  const [ruleDialogOpen, setRuleDialogOpen] = useState(false)
+  const [ruleTypeFilter, setRuleTypeFilter] = useState<PointType | 'ALL'>('ALL')
+  const [ruleCategoryFilter, setRuleCategoryFilter] = useState<string>('all')
+
+  // 加载积分规则
+  useEffect(() => {
+    const loadRules = async () => {
+      try {
+        const response = await fetch('/api/points/rules?limit=100&isActive=true')
+        if (!response.ok) return
+
+        const data = await response.json()
+        setRules(data.data || [])
+      } catch (error) {
+        console.error('Failed to load rules:', error)
+      }
+    }
+
+    loadRules()
+  }, [])
+
+  // 选择规则
+  const handleSelectRule = (rule: PointRule) => {
+    setPoints(Math.abs(rule.points).toString())
+    setReason(rule.name)
+    setRuleDialogOpen(false)
+    toast.success(`已选择规则: ${rule.name}`)
+  }
+
+  // 获取所有分类
+  const categories = Array.from(new Set(rules.map(r => r.category).filter(Boolean)))
+
+  // 过滤规则
+  const filteredRules = rules.filter(rule => {
+    if (ruleTypeFilter !== 'ALL' && rule.type !== ruleTypeFilter) return false
+    if (ruleCategoryFilter !== 'all' && rule.category !== ruleCategoryFilter) return false
+    return true
+  })
 
   const handleQuickAction = async (value: number, defaultReason: string) => {
     if (!selectedStudent) {
@@ -104,7 +164,7 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
         <CardDescription>快速为学生加分或扣分</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* 学生选择 */}
+        {/* 学生选择 - 使用 Combobox 支持搜索 */}
         <div className="space-y-2">
           <Label>选择学生</Label>
           {students.length === 0 ? (
@@ -120,18 +180,54 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
             </div>
           ) : (
             <>
-              <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择学生..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {students.map(student => (
-                    <SelectItem key={student.id} value={student.id}>
-                      {student.name} ({student.studentNo}) - {student.points}分
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between"
+                  >
+                    {selectedStudent
+                      ? students.find(s => s.id === selectedStudent)?.name
+                      : '选择学生...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="搜索学生..." />
+                    <CommandList>
+                      <CommandEmpty>未找到学生</CommandEmpty>
+                      <CommandGroup>
+                        {students.map(student => (
+                          <CommandItem
+                            key={student.id}
+                            value={`${student.name} ${student.studentNo}`}
+                            onSelect={() => {
+                              setSelectedStudent(student.id)
+                              setOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                selectedStudent === student.id ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium">{student.name}</div>
+                              <div className="text-muted-foreground text-sm">
+                                {student.studentNo} · {student.points}分
+                              </div>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               {selectedStudentData && (
                 <p className="text-muted-foreground text-sm">
                   当前积分: {selectedStudentData.points}
@@ -210,7 +306,21 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
 
         {/* 自定义操作 */}
         <div className="space-y-2">
-          <Label>自定义操作</Label>
+          <div className="flex items-center justify-between">
+            <Label>自定义操作</Label>
+            {rules.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setRuleDialogOpen(true)}
+                disabled={loading || students.length === 0}
+                className="h-auto p-1 text-xs"
+              >
+                <Clipboard className="mr-1 h-3 w-3" />
+                选择规则
+              </Button>
+            )}
+          </div>
           <div className="flex gap-2">
             <Input
               type="number"
@@ -236,6 +346,111 @@ export function QuickPointsPanel({ students, onSuccess }: QuickPointsPanelProps)
             {loading ? '处理中...' : '执行操作'}
           </Button>
         </div>
+
+        {/* 规则选择对话框 */}
+        <Dialog open={ruleDialogOpen} onOpenChange={setRuleDialogOpen}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle>选择积分规则</DialogTitle>
+            </DialogHeader>
+
+            {/* 筛选器 */}
+            <div className="flex flex-wrap gap-2">
+              <div className="flex gap-1 rounded-lg border p-1">
+                <Button
+                  size="sm"
+                  variant={ruleTypeFilter === 'ALL' ? 'default' : 'ghost'}
+                  onClick={() => setRuleTypeFilter('ALL')}
+                  className="h-8"
+                >
+                  全部
+                </Button>
+                <Button
+                  size="sm"
+                  variant={ruleTypeFilter === PointType.ADD ? 'default' : 'ghost'}
+                  onClick={() => setRuleTypeFilter(PointType.ADD)}
+                  className="h-8 text-green-600 hover:text-green-700"
+                >
+                  <Plus className="mr-1 h-3 w-3" />
+                  加分
+                </Button>
+                <Button
+                  size="sm"
+                  variant={ruleTypeFilter === PointType.SUBTRACT ? 'default' : 'ghost'}
+                  onClick={() => setRuleTypeFilter(PointType.SUBTRACT)}
+                  className="h-8 text-red-600 hover:text-red-700"
+                >
+                  <Minus className="mr-1 h-3 w-3" />
+                  减分
+                </Button>
+              </div>
+
+              {categories.length > 0 && (
+                <Select value={ruleCategoryFilter} onValueChange={setRuleCategoryFilter}>
+                  <SelectTrigger className="h-8 w-[140px]">
+                    <SelectValue placeholder="选择分类" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部分类</SelectItem>
+                    {categories.map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {/* 规则列表 - 网格布局 */}
+            <div className="max-h-[450px] overflow-y-auto">
+              {filteredRules.length === 0 ? (
+                <div className="text-muted-foreground py-12 text-center text-sm">
+                  {rules.length === 0 ? '暂无可用规则' : '没有符合条件的规则'}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+                  {filteredRules.map(rule => (
+                    <Button
+                      key={rule.id}
+                      variant="outline"
+                      className="h-auto flex-col items-start p-3 text-left"
+                      onClick={() => handleSelectRule(rule)}
+                    >
+                      <div className="flex w-full items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate font-medium">{rule.name}</div>
+                          {rule.category && (
+                            <div className="text-muted-foreground truncate text-xs">
+                              {rule.category}
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          className={cn(
+                            'shrink-0 rounded-md px-2 py-1 text-xs font-semibold',
+                            rule.type === PointType.ADD
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : rule.type === PointType.SUBTRACT
+                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          )}
+                        >
+                          {rule.type === PointType.ADD
+                            ? '+'
+                            : rule.type === PointType.SUBTRACT
+                              ? '-'
+                              : '='}
+                          {Math.abs(rule.points)}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   )

@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 export default function PointsPage() {
   const [rules, setRules] = useState<PointRuleColumn[]>([])
   const [loading, setLoading] = useState(true)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editingRule, setEditingRule] = useState<PointRuleColumn | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -34,7 +35,7 @@ export default function PointsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [pageCount, setPageCount] = useState(1)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState('') // 实际查询的值
   const [typeFilter, setTypeFilter] = useState<PointType | 'all'>('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [activeFilter, setActiveFilter] = useState('all')
@@ -62,12 +63,13 @@ export default function PointsPage() {
       }
 
       const data = await response.json()
-      setRules(data.rules || [])
-      setPageCount(data.pagination?.pageCount || 1)
+      console.log('API Response:', data) // 调试日志
+      setRules(data.data || [])
+      setPageCount(data.pagination?.totalPages || 1)
 
       // 提取所有分类（用于过滤器）
       const uniqueCategories = Array.from(
-        new Set((data.rules || []).map((r: PointRuleColumn) => r.category).filter(Boolean))
+        new Set((data.data || []).map((r: PointRuleColumn) => r.category).filter(Boolean))
       ) as string[]
       setCategories(uniqueCategories)
     } catch (error) {
@@ -75,7 +77,14 @@ export default function PointsPage() {
       toast.error('加载规则列表失败')
     } finally {
       setLoading(false)
+      setInitialLoading(false)
     }
+  }
+
+  // 处理搜索
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    setCurrentPage(1)
   }
 
   useEffect(() => {
@@ -135,6 +144,15 @@ export default function PointsPage() {
     onDelete: handleDelete,
   })
 
+  // 页面初始加载时显示全屏loading
+  if (initialLoading) {
+    return (
+      <div className="flex h-[450px] items-center justify-center">
+        <div className="text-muted-foreground">加载中...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto py-6">
       <Card>
@@ -161,41 +179,33 @@ export default function PointsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex h-64 items-center justify-center">
-              <div className="text-muted-foreground">加载中...</div>
-            </div>
-          ) : (
-            <PointRuleDataTable
-              columns={columns}
-              data={rules}
-              pageCount={pageCount}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={size => {
-                setPageSize(size)
-                setCurrentPage(1)
-              }}
-              onSearch={value => {
-                setSearch(value)
-                setCurrentPage(1)
-              }}
-              onTypeFilter={type => {
-                setTypeFilter(type)
-                setCurrentPage(1)
-              }}
-              onCategoryFilter={category => {
-                setCategoryFilter(category)
-                setCurrentPage(1)
-              }}
-              onActiveFilter={active => {
-                setActiveFilter(active)
-                setCurrentPage(1)
-              }}
-              categories={categories}
-            />
-          )}
+          <PointRuleDataTable
+            columns={columns}
+            data={rules}
+            pageCount={pageCount}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={size => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+            onSearch={handleSearch}
+            onTypeFilter={type => {
+              setTypeFilter(type)
+              setCurrentPage(1)
+            }}
+            onCategoryFilter={category => {
+              setCategoryFilter(category)
+              setCurrentPage(1)
+            }}
+            onActiveFilter={active => {
+              setActiveFilter(active)
+              setCurrentPage(1)
+            }}
+            categories={categories}
+            loading={loading}
+          />
         </CardContent>
       </Card>
 

@@ -11,10 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Plus, Tag as TagIcon } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { StudentTagFormDialog } from './student-tag-form-dialog'
 
 interface Tag {
   id: string
@@ -43,11 +46,14 @@ export function BatchTagDialog({
   const [loading, setLoading] = useState(false)
   const [tags, setTags] = useState<Tag[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [showCreateTag, setShowCreateTag] = useState(false)
+  const [searchText, setSearchText] = useState('')
 
   useEffect(() => {
     if (open) {
       loadTags()
       setSelectedTags([])
+      setSearchText('')
     }
   }, [open])
 
@@ -124,36 +130,78 @@ export function BatchTagDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="h-[400px] pr-4">
-          {tags.length === 0 ? (
-            <div className="text-muted-foreground py-8 text-center">暂无标签，请先创建标签</div>
-          ) : (
-            <div className="space-y-2">
-              {tags.map(tag => (
-                <div key={tag.id} className="flex items-center space-x-3 rounded-lg border p-3">
-                  <Checkbox
-                    checked={selectedTags.includes(tag.id)}
-                    onCheckedChange={checked => {
-                      if (checked) {
-                        setSelectedTags([...selectedTags, tag.id])
-                      } else {
-                        setSelectedTags(selectedTags.filter(id => id !== tag.id))
-                      }
-                    }}
-                  />
-                  <div
-                    className="h-4 w-4 rounded-full border"
-                    style={{ backgroundColor: tag.color }}
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium">{tag.name}</div>
-                  </div>
-                  <Badge variant="secondary">{tag._count.relations} 人</Badge>
+        <div className="space-y-4">
+          {/* 搜索和快速创建 */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="搜索标签..."
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowCreateTag(true)}
+              title="快速创建标签"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <ScrollArea className="h-[350px] pr-4">
+            {tags.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <TagIcon className="text-muted-foreground mb-4 h-12 w-12" />
+                <h3 className="mb-2 font-semibold">暂无标签</h3>
+                <p className="text-muted-foreground mb-4 text-sm">
+                  请先创建标签才能进行批量标签操作
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={() => setShowCreateTag(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    快速创建
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/students">前往标签管理</Link>
+                  </Button>
                 </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {tags
+                  .filter(tag =>
+                    searchText ? tag.name.toLowerCase().includes(searchText.toLowerCase()) : true
+                  )
+                  .map(tag => (
+                    <div
+                      key={tag.id}
+                      className="hover:bg-accent flex items-center space-x-3 rounded-lg border p-3"
+                    >
+                      <Checkbox
+                        checked={selectedTags.includes(tag.id)}
+                        onCheckedChange={checked => {
+                          if (checked) {
+                            setSelectedTags([...selectedTags, tag.id])
+                          } else {
+                            setSelectedTags(selectedTags.filter(id => id !== tag.id))
+                          }
+                        }}
+                      />
+                      <div
+                        className="h-4 w-4 rounded-full border"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">{tag.name}</div>
+                      </div>
+                      <Badge variant="secondary">{tag._count.relations} 人</Badge>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </ScrollArea>
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
@@ -165,6 +213,16 @@ export function BatchTagDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* 快速创建标签对话框 */}
+      <StudentTagFormDialog
+        open={showCreateTag}
+        onOpenChange={setShowCreateTag}
+        onSuccess={() => {
+          setShowCreateTag(false)
+          loadTags()
+        }}
+      />
     </Dialog>
   )
 }

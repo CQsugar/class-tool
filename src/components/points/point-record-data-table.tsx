@@ -60,6 +60,8 @@ export function PointRecordDataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [searchValue, setSearchValue] = useState('')
+  const [typeValue, setTypeValue] = useState<string>('all')
+  const [studentValue, setStudentValue] = useState<string>('all')
 
   const table = useReactTable({
     data,
@@ -82,6 +84,16 @@ export function PointRecordDataTable<TData, TValue>({
     onSearch(value)
   }
 
+  const handleTypeFilter = (value: string) => {
+    setTypeValue(value)
+    onTypeFilter(value as PointType | 'all')
+  }
+
+  const handleStudentFilter = (value: string) => {
+    setStudentValue(value)
+    onStudentFilter(value)
+  }
+
   return (
     <div className="space-y-4">
       {/* 过滤器区域 */}
@@ -93,7 +105,7 @@ export function PointRecordDataTable<TData, TValue>({
           className="max-w-sm"
         />
         <div className="flex flex-wrap gap-2">
-          <Select onValueChange={value => onTypeFilter(value as PointType | 'all')}>
+          <Select value={typeValue} onValueChange={handleTypeFilter}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="类型" />
             </SelectTrigger>
@@ -105,7 +117,7 @@ export function PointRecordDataTable<TData, TValue>({
             </SelectContent>
           </Select>
 
-          <Select onValueChange={value => onStudentFilter(value)}>
+          <Select value={studentValue} onValueChange={handleStudentFilter}>
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="学生" />
             </SelectTrigger>

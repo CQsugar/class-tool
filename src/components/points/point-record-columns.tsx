@@ -36,7 +36,7 @@ export const pointRecordColumns: ColumnDef<PointRecordColumn>[] = [
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
             <AvatarImage src={student.avatar || undefined} alt={student.name} />
-            <AvatarFallback>{student.name[0]}</AvatarFallback>
+            <AvatarFallback>{student.name.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div>
             <div className="font-medium">{student.name}</div>

@@ -2,8 +2,10 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Gender, Student } from '@prisma/client'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import * as z from 'zod'
 
 import { AvatarUpload } from '@/components/ui/avatar-upload'
 import { Button } from '@/components/ui/button'
@@ -33,12 +35,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  createStudentSchema,
-  updateStudentSchema,
-  type CreateStudentInput,
-  type UpdateStudentInput,
-} from '@/lib/validations/student'
+
+// 统一的表单 schema
+const formSchema = z.object({
+  name: z.string().min(1, '请输入学生姓名'),
+  studentNo: z.string().min(1, '请输入学号'),
+  gender: z.nativeEnum(Gender),
+  phone: z.string().optional(),
+  parentPhone: z.string().optional(),
+  avatar: z.string().optional(),
+  notes: z.string().optional(),
+})
+
+type FormValues = z.infer<typeof formSchema>
 
 interface StudentFormDialogProps {
   open: boolean
@@ -55,30 +64,47 @@ export function StudentFormDialog({
 }: StudentFormDialogProps) {
   const isEdit = !!student
 
-  const form = useForm<CreateStudentInput | UpdateStudentInput>({
-    resolver: zodResolver(isEdit ? updateStudentSchema : createStudentSchema),
-    defaultValues: student
-      ? {
-          name: student.name,
-          studentNo: student.studentNo,
-          gender: student.gender,
-          phone: student.phone || '',
-          parentPhone: student.parentPhone || '',
-          avatar: student.avatar || '',
-          notes: student.notes || '',
-        }
-      : {
-          name: '',
-          studentNo: '',
-          gender: Gender.MALE,
-          phone: '',
-          parentPhone: '',
-          avatar: '',
-          notes: '',
-        },
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      studentNo: '',
+      gender: Gender.MALE,
+      phone: '',
+      parentPhone: '',
+      avatar: '',
+      notes: '',
+    },
   })
 
-  const onSubmit = async (data: CreateStudentInput | UpdateStudentInput) => {
+  // 当对话框打开或学生数据变化时，重置表单
+  useEffect(() => {
+    if (open && student) {
+      // 编辑模式：填充学生数据
+      form.reset({
+        name: student.name,
+        studentNo: student.studentNo,
+        gender: student.gender,
+        phone: student.phone || '',
+        parentPhone: student.parentPhone || '',
+        avatar: student.avatar || '',
+        notes: student.notes || '',
+      })
+    } else if (open && !student) {
+      // 新增模式：重置为空值
+      form.reset({
+        name: '',
+        studentNo: '',
+        gender: Gender.MALE,
+        phone: '',
+        parentPhone: '',
+        avatar: '',
+        notes: '',
+      })
+    }
+  }, [open, student, form])
+
+  async function onSubmit(values: FormValues) {
     try {
       const url = isEdit ? `/api/students/${student.id}` : '/api/students'
       const method = isEdit ? 'PATCH' : 'POST'
@@ -88,7 +114,7 @@ export function StudentFormDialog({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(values),
       })
 
       if (!response.ok) {
@@ -146,7 +172,6 @@ export function StudentFormDialog({
                     <FormControl>
                       <Input placeholder="请输入学号" {...field} />
                     </FormControl>
-                    <FormDescription>只能包含字母和数字</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

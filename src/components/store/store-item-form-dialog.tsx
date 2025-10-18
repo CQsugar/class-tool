@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ItemType } from '@prisma/client'
-import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -26,6 +25,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { ProductImageUpload } from '@/components/ui/product-image-upload'
 import {
   Select,
   SelectContent,
@@ -265,36 +265,13 @@ export function StoreItemFormDialog({
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>商品图片</FormLabel>
                   <FormControl>
-                    <div className="space-y-2">
-                      <Input type="url" placeholder="https://example.com/image.jpg" {...field} />
-                      {field.value && (
-                        <div className="relative inline-block">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={field.value}
-                            alt="商品预览"
-                            className="h-32 w-32 rounded-md object-cover"
-                            onError={e => {
-                              e.currentTarget.src = ''
-                              toast.error('图片加载失败，请检查URL')
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute -top-2 -right-2 h-6 w-6"
-                            onClick={() => field.onChange('')}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    <ProductImageUpload
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={loading}
+                    />
                   </FormControl>
-                  <FormDescription>输入图片URL，留空使用默认图标</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

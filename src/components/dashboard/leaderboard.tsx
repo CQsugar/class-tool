@@ -118,8 +118,8 @@ export function Leaderboard() {
 
                 {/* 头像 */}
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={student.avatar || undefined} />
-                  <AvatarFallback>{student.name[0]}</AvatarFallback>
+                  <AvatarImage src={student.avatar || undefined} alt={student.name} />
+                  <AvatarFallback>{student.name.slice(0, 2)}</AvatarFallback>
                 </Avatar>
 
                 {/* 学生信息 */}

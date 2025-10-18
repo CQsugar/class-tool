@@ -21,6 +21,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       where: { id },
       include: {
         relations: {
+          where: {
+            student: {
+              isArchived: false, // 只包含未归档的学生
+            },
+          },
           include: {
             student: {
               select: {

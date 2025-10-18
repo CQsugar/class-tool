@@ -25,11 +25,16 @@ export async function GET(request: NextRequest) {
     // 构建查询条件
     const where: {
       userId: string
+      student?: { isArchived: boolean }
       studentId?: string
       itemId?: string
-      status?: RedemptionStatus
+      status?: string
+      createdAt?: { gte: Date; lte: Date }
     } = {
       userId: session.user.id,
+      student: {
+        isArchived: false, // 只显示未归档学生的兑换记录
+      },
     }
 
     if (studentId) {

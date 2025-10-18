@@ -30,7 +30,7 @@ export default function PointRecordsPage() {
   const [records, setRecords] = useState<PointRecordColumn[]>([])
   const [stats, setStats] = useState<PointRecordStats | null>(null)
   const [students, setStudents] = useState<Student[]>([])
-  const [loading, setLoading] = useState(true)
+  const [initialLoading, setInitialLoading] = useState(true)
 
   // 分页和过滤状态
   const [currentPage, setCurrentPage] = useState(1)
@@ -40,11 +40,14 @@ export default function PointRecordsPage() {
   const [typeFilter, setTypeFilter] = useState<PointType | 'all'>('all')
   const [studentFilter, setStudentFilter] = useState('all')
 
-  // 加载学生列表
+  // 加载学生列表（排除已归档学生）
   useEffect(() => {
     const loadStudents = async () => {
       try {
-        const response = await fetch('/api/students')
+        const params = new URLSearchParams({
+          isArchived: 'false', // 只加载未归档的学生
+        })
+        const response = await fetch(`/api/students?${params}`)
         if (!response.ok) throw new Error('加载学生列表失败')
 
         const data = await response.json()
@@ -97,6 +100,7 @@ export default function PointRecordsPage() {
       toast.error('加载数据失败')
     } finally {
       setLoading(false)
+      setInitialLoading(false)
     }
   }
 
@@ -126,7 +130,7 @@ export default function PointRecordsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {initialLoading ? (
             <div className="flex h-64 items-center justify-center">
               <div className="text-muted-foreground">加载中...</div>
             </div>

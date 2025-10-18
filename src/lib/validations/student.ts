@@ -24,7 +24,20 @@ export const studentSchema = z.object({
     .regex(/^1[3-9]\d{9}$/, '请输入有效的家长手机号码')
     .optional()
     .or(z.literal('')),
-  avatar: z.string().url('请输入有效的头像URL').optional().or(z.literal('')),
+  avatar: z
+    .string()
+    .refine(
+      val => {
+        if (!val || val === '') return true
+        // 允许本地路径（/uploads/...）或完整URL（https://...）
+        return (
+          val.startsWith('/uploads/') || val.startsWith('http://') || val.startsWith('https://')
+        )
+      },
+      { message: '请输入有效的头像路径或URL' }
+    )
+    .optional()
+    .or(z.literal('')),
   notes: z.string().max(500, '备注不能超过500个字符').optional(),
 })
 
@@ -58,7 +71,10 @@ export const studentQuerySchema = z.object({
     val => (val === null || val === '' ? undefined : val),
     z.nativeEnum(Gender).optional()
   ),
-  isArchived: z.preprocess(val => (val === null || val === '' ? 'false' : val), z.coerce.boolean()),
+  isArchived: z.preprocess(
+    val => (val === null || val === undefined || val === '' ? undefined : val),
+    z.coerce.boolean().optional()
+  ),
   sortBy: z.preprocess(
     val => (val === null || val === '' ? 'points' : val),
     z.enum(['name', 'studentNo', 'points', 'createdAt', 'updatedAt'])

@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, Tags, Users } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 type StudentTag = StudentTagColumn
@@ -32,7 +32,7 @@ interface TagStats {
 }
 
 export default function StudentTagsPage() {
-  const [loading, setLoading] = useState(true)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [tags, setTags] = useState<StudentTag[]>([])
   const [stats, setStats] = useState<TagStats>({
     total: 0,
@@ -46,14 +46,39 @@ export default function StudentTagsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [tagToDelete, setTagToDelete] = useState<StudentTag | null>(null)
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [pageCount, setPageCount] = useState(1)
+  const [searchText, setSearchText] = useState('') // 输入框的值
+  const [search, setSearch] = useState('') // 实际查询的值
+
   useEffect(() => {
     loadTags()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, search])
+
+  // 防抖搜索：输入停止500ms后才触发搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchText)
+      setCurrentPage(1)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchText])
 
   const loadTags = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/students/tags')
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+      })
+
+      if (search) params.append('search', search)
+
+      const response = await fetch(`/api/students/tags?${params}`)
       if (!response.ok) throw new Error('加载标签失败')
 
       const data = await response.json()
@@ -62,6 +87,7 @@ export default function StudentTagsPage() {
         createdAt: new Date(tag.createdAt),
       }))
       setTags(allTags)
+      setPageCount(data.pagination?.totalPages || 1)
 
       // 计算统计数据
       const totalStudentsTagged = new Set(
@@ -86,8 +112,13 @@ export default function StudentTagsPage() {
       toast.error('加载标签失败')
     } finally {
       setLoading(false)
+      setInitialLoading(false)
     }
   }
+
+  const handleSearch = useCallback((value: string) => {
+    setSearchText(value) // 更新输入框的值，防抖逻辑会自动处理
+  }, [])
 
   const handleCreate = () => {
     setEditingTag(null)
@@ -208,12 +239,24 @@ export default function StudentTagsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {initialLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
             </div>
           ) : (
-            <StudentTagDataTable columns={enhancedColumns} data={tags} />
+            <StudentTagDataTable
+              columns={enhancedColumns}
+              data={tags}
+              pageCount={pageCount}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={size => {
+                setPageSize(size)
+                setCurrentPage(1)
+              }}
+              onSearch={handleSearch}
+            />
           )}
         </CardContent>
       </Card>

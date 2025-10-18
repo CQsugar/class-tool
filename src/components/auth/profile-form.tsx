@@ -8,7 +8,6 @@ import { SessionManagement } from './session-management'
 export function ProfileForm() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      {/* 用户头像部分 */}
       <div className="bg-muted/30 flex items-center space-x-4 rounded-lg p-6">
         <UserAvatar className="h-16 w-16" />
         <div>

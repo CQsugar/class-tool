@@ -5,7 +5,6 @@ import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -17,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PointRuleTemplate, TemplateCategory } from '@/lib/constants/point-rule-templates'
+import { cn } from '@/lib/utils'
 
 interface TemplateSelectDialogProps {
   open: boolean
@@ -78,23 +78,19 @@ export function TemplateSelectDialog({ open, onOpenChange, onSelect }: TemplateS
     setActiveCategory('all')
   }
 
-  const getTypeColor = (type: PointType) => {
-    return type === PointType.ADD ? 'bg-green-500/10 text-green-700' : 'bg-red-500/10 text-red-700'
-  }
-
   const getTypeText = (type: PointType) => {
     return type === PointType.ADD ? '+' : '-'
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] max-w-3xl">
+      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
         <DialogHeader>
           <DialogTitle>选择规则模板</DialogTitle>
           <DialogDescription>从预设模板快速创建积分规则</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 space-y-4 overflow-hidden">
           {/* 搜索框 */}
           <div className="relative">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
@@ -107,8 +103,8 @@ export function TemplateSelectDialog({ open, onOpenChange, onSelect }: TemplateS
           </div>
 
           {/* 分类标签页 */}
-          <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-            <TabsList className="w-full justify-start overflow-x-auto">
+          <Tabs value={activeCategory} onValueChange={setActiveCategory} className="flex flex-col">
+            <TabsList className="w-full flex-shrink-0 justify-start overflow-x-auto">
               <TabsTrigger value="all">全部</TabsTrigger>
               {categories.map(category => (
                 <TabsTrigger key={category.id} value={category.id}>
@@ -118,7 +114,7 @@ export function TemplateSelectDialog({ open, onOpenChange, onSelect }: TemplateS
               ))}
             </TabsList>
 
-            <TabsContent value={activeCategory} className="mt-4">
+            <TabsContent value={activeCategory} className="mt-4 flex-1 overflow-hidden">
               {loading ? (
                 <div className="flex h-64 items-center justify-center">
                   <div className="text-muted-foreground">加载中...</div>
@@ -131,43 +127,41 @@ export function TemplateSelectDialog({ open, onOpenChange, onSelect }: TemplateS
                   </div>
                 </div>
               ) : (
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="grid gap-3">
+                <ScrollArea className="h-[450px]">
+                  <div className="grid gap-2 pr-4 sm:grid-cols-2">
                     {filteredTemplates.map(template => (
-                      <div
+                      <button
                         key={template.id}
-                        className="group hover:border-primary relative cursor-pointer rounded-lg border p-4 transition-all hover:shadow-sm"
+                        type="button"
+                        className="hover:border-primary group relative flex items-start gap-3 rounded-lg border p-3 text-left transition-all hover:shadow-md"
                         onClick={() => handleSelect(template)}
                       >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center gap-2">
-                              {template.icon && <span className="text-xl">{template.icon}</span>}
-                              <h4 className="font-medium">{template.name}</h4>
-                              <Badge variant="secondary" className={getTypeColor(template.type)}>
-                                {getTypeText(template.type)}
-                                {Math.abs(template.points)}分
-                              </Badge>
-                            </div>
-                            {template.description && (
-                              <p className="text-muted-foreground text-sm">
-                                {template.description}
-                              </p>
-                            )}
+                        {template.icon && (
+                          <span className="shrink-0 text-2xl leading-none">{template.icon}</span>
+                        )}
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="truncate font-medium">{template.name}</h4>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="opacity-0 transition-opacity group-hover:opacity-100"
-                            onClick={e => {
-                              e.stopPropagation()
-                              handleSelect(template)
-                            }}
-                          >
-                            选择
-                          </Button>
+                          {template.description && (
+                            <p className="text-muted-foreground line-clamp-2 text-xs">
+                              {template.description}
+                            </p>
+                          )}
                         </div>
-                      </div>
+                        <Badge
+                          variant="secondary"
+                          className={cn(
+                            'shrink-0',
+                            template.type === PointType.ADD
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          )}
+                        >
+                          {getTypeText(template.type)}
+                          {Math.abs(template.points)}
+                        </Badge>
+                      </button>
                     ))}
                   </div>
                 </ScrollArea>

@@ -126,7 +126,7 @@ export const createStudentColumns = ({
     cell: ({ row }) => {
       const points = row.getValue('points') as number
       return (
-        <div className="text-right font-medium">
+        <div className="flex items-center justify-start">
           <Badge variant={points >= 0 ? 'default' : 'destructive'} className="font-mono">
             {points >= 0 ? '+' : ''}
             {points}

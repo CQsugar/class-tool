@@ -47,6 +47,10 @@ export const navGroups: NavGroup[] = [
             url: '/students',
           },
           {
+            title: '归档学生',
+            url: '/students/archived',
+          },
+          {
             title: '分组管理',
             url: '/students/groups',
           },

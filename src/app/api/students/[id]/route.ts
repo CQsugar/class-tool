@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
+import { storageManager } from '@/lib/upload'
 import { updateStudentSchema } from '@/lib/validations/student'
 import { Prisma } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
@@ -106,6 +107,22 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       if (duplicateStudent) {
         return NextResponse.json({ error: '学号已存在' }, { status: 409 })
+      }
+    }
+
+    // 如果更新头像，删除旧头像文件
+    if (
+      validatedData.avatar !== undefined &&
+      existingStudent.avatar &&
+      validatedData.avatar !== existingStudent.avatar &&
+      existingStudent.avatar.startsWith('/uploads/')
+    ) {
+      try {
+        const oldAvatarPath = existingStudent.avatar.replace('/uploads', '')
+        await storageManager.deleteFile(oldAvatarPath)
+      } catch (error) {
+        console.error('删除旧头像失败:', error)
+        // 不阻止更新操作，继续执行
       }
     }
 

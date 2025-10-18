@@ -8,7 +8,20 @@ export const createStoreItemSchema = z.object({
   name: z.string().min(1, '商品名称不能为空').max(100, '商品名称不能超过100个字符'),
   description: z.string().max(500, '商品描述不能超过500个字符').optional(),
   cost: z.number().int('积分必须是整数').min(1, '积分必须大于0'),
-  image: z.string().url('请输入有效的图片URL').optional().or(z.literal('')),
+  image: z
+    .string()
+    .refine(
+      val => {
+        if (!val || val === '') return true
+        // 允许本地路径（/uploads/...）或完整URL（https://...）
+        return (
+          val.startsWith('/uploads/') || val.startsWith('http://') || val.startsWith('https://')
+        )
+      },
+      { message: '请输入有效的图片路径或URL' }
+    )
+    .optional()
+    .or(z.literal('')),
   type: z.nativeEnum(ItemType),
   stock: z.number().int('库存必须是整数').min(0, '库存不能为负数').nullable().optional(),
   sortOrder: z.number().int('排序必须是整数').default(0),

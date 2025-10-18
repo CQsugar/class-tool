@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PointRule, PointType } from '@prisma/client'
 import { Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -62,24 +62,40 @@ export function PointRuleFormDialog({
 
   const form = useForm<CreatePointRuleInput | UpdatePointRuleInput>({
     resolver: zodResolver(isEdit ? updatePointRuleSchema : createPointRuleSchema),
-    defaultValues: rule
-      ? {
-          name: rule.name,
-          points: rule.points,
-          type: rule.type,
-          category: rule.category || '',
-          description: rule.description || '',
-          isActive: rule.isActive,
-        }
-      : {
-          name: '',
-          points: 0,
-          type: PointType.ADD,
-          category: '',
-          description: '',
-          isActive: true,
-        },
+    defaultValues: {
+      name: '',
+      points: 0,
+      type: PointType.ADD,
+      category: '',
+      description: '',
+      isActive: true,
+    },
   })
+
+  // 当对话框打开或规则数据变化时，重置表单
+  useEffect(() => {
+    if (open && rule) {
+      // 编辑模式：填充规则数据
+      form.reset({
+        name: rule.name,
+        points: rule.points,
+        type: rule.type,
+        category: rule.category || '',
+        description: rule.description || '',
+        isActive: rule.isActive,
+      })
+    } else if (open && !rule) {
+      // 新增模式：重置为空值
+      form.reset({
+        name: '',
+        points: 0,
+        type: PointType.ADD,
+        category: '',
+        description: '',
+        isActive: true,
+      })
+    }
+  }, [open, rule, form])
 
   const handleTemplateSelect = (template: PointRuleTemplate) => {
     form.reset({
@@ -126,29 +142,27 @@ export function PointRuleFormDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>{isEdit ? '编辑积分规则' : '添加积分规则'}</DialogTitle>
-                <DialogDescription>
-                  {isEdit
-                    ? '修改积分规则。点击保存以更新。'
-                    : '创建新的积分规则。带 * 的字段为必填项。'}
-                </DialogDescription>
-              </div>
-              {!isEdit && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTemplateDialogOpen(true)}
-                  className="shrink-0"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  从模板选择
-                </Button>
-              )}
-            </div>
+            <DialogTitle>{isEdit ? '编辑积分规则' : '添加积分规则'}</DialogTitle>
+            <DialogDescription>
+              {isEdit
+                ? '修改积分规则。点击保存以更新。'
+                : '创建新的积分规则。带 * 的字段为必填项。'}
+            </DialogDescription>
           </DialogHeader>
+
+          {!isEdit && (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setTemplateDialogOpen(true)}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                从模板选择
+              </Button>
+            </div>
+          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

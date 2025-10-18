@@ -1,6 +1,14 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -25,12 +33,23 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   onSearch?: (search: string) => void
+  // 分页参数
+  pageCount?: number
+  currentPage?: number
+  pageSize?: number
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (pageSize: number) => void
 }
 
 export function StudentGroupDataTable<TData, TValue>({
   columns,
   data,
   onSearch,
+  pageCount,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -44,6 +63,8 @@ export function StudentGroupDataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: pageCount !== undefined,
+    pageCount,
     state: {
       sorting,
       columnFilters,
@@ -108,6 +129,51 @@ export function StudentGroupDataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
+      {/* 分页 - 仅在提供分页参数时显示 */}
+      {pageCount !== undefined && currentPage !== undefined && pageSize !== undefined && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <p className="text-muted-foreground text-sm">每页显示</p>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={value => onPageSizeChange?.(Number(value))}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-sm">条</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              上一页
+            </Button>
+            <div className="text-sm">
+              第 {currentPage} / {pageCount || 1} 页
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(currentPage + 1)}
+              disabled={currentPage >= pageCount}
+            >
+              下一页
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

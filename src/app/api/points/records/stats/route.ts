@@ -34,7 +34,16 @@ export async function GET(request: NextRequest) {
         gte?: Date
         lte?: Date
       }
-    } = { userId }
+      student?: {
+        isArchived: boolean
+      }
+    } = {
+      userId,
+      // 只统计未归档学生的记录
+      student: {
+        isArchived: false,
+      },
+    }
 
     if (studentId) {
       where.studentId = studentId

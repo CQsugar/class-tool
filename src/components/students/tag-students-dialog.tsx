@@ -224,7 +224,7 @@ export function TagStudentsDialog({
                               src={relation.student.avatar || undefined}
                               alt={relation.student.name}
                             />
-                            <AvatarFallback>{relation.student.name[0]}</AvatarFallback>
+                            <AvatarFallback>{relation.student.name.slice(0, 2)}</AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="font-medium">{relation.student.name}</div>
@@ -292,7 +292,7 @@ export function TagStudentsDialog({
                     />
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={student.avatar || undefined} alt={student.name} />
-                      <AvatarFallback>{student.name[0]}</AvatarFallback>
+                      <AvatarFallback>{student.name.slice(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="font-medium">{student.name}</div>

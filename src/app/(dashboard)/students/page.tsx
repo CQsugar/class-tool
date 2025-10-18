@@ -13,6 +13,17 @@ import { DataTable } from '@/components/students/data-table'
 import { ExportStudentDialog } from '@/components/students/export-student-dialog'
 import { ImportStudentDialog } from '@/components/students/import-student-dialog'
 import { StudentFormDialog } from '@/components/students/student-form-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -25,6 +36,7 @@ import {
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
+  const [initialLoading, setInitialLoading] = useState(true) // 初始加载状态
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
@@ -35,10 +47,17 @@ export default function StudentsPage() {
   const [tagMode, setTagMode] = useState<'add' | 'remove'>('add')
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
 
-  // 分页状态
+  // AlertDialog状态
+  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false)
+  const [archiveAlertOpen, setArchiveAlertOpen] = useState(false)
+  const [deletingStudent, setDeletingStudent] = useState<Student | null>(null)
+
+  // 分页和搜索状态
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [totalItems, setTotalItems] = useState(0)
+  const [searchText, setSearchText] = useState('') // 输入框的值
+  const [searchQuery, setSearchQuery] = useState('') // 实际查询的值
   const pageCount = Math.ceil(totalItems / pageSize)
 
   // 获取学生列表
@@ -48,7 +67,12 @@ export default function StudentsPage() {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: pageSize.toString(),
+        isArchived: 'false', // 只显示未归档的学生
       })
+
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery.trim())
+      }
 
       const response = await fetch(`/api/students?${params}`)
 
@@ -57,6 +81,7 @@ export default function StudentsPage() {
       }
 
       const result = await response.json()
+
       setStudents(result.data || [])
       setTotalItems(result.pagination?.total || 0)
     } catch (error) {
@@ -64,12 +89,27 @@ export default function StudentsPage() {
       toast.error('获取学生列表失败')
     } finally {
       setLoading(false)
+      setInitialLoading(false) // 首次加载完成后设置为false
+    }
+  }
+
+  // 处理搜索
+  const handleSearch = () => {
+    setSearchQuery(searchText)
+    setCurrentPage(1) // 搜索时重置到第一页
+  }
+
+  // 处理搜索框回车
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch()
     }
   }
 
   useEffect(() => {
     fetchStudents()
-  }, [currentPage, pageSize])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, searchQuery])
 
   // 编辑学生
   const handleEdit = (student: Student) => {
@@ -77,14 +117,18 @@ export default function StudentsPage() {
     setDialogOpen(true)
   }
 
-  // 删除学生
-  const handleDelete = async (student: Student) => {
-    if (!confirm(`确定要删除学生 ${student.name} 吗？`)) {
-      return
-    }
+  // 删除学生 - 打开确认对话框
+  const handleDelete = (student: Student) => {
+    setDeletingStudent(student)
+    setDeleteAlertOpen(true)
+  }
+
+  // 确认删除学生
+  const confirmDelete = async () => {
+    if (!deletingStudent) return
 
     try {
-      const response = await fetch(`/api/students/${student.id}`, {
+      const response = await fetch(`/api/students/${deletingStudent.id}`, {
         method: 'DELETE',
       })
 
@@ -97,6 +141,9 @@ export default function StudentsPage() {
     } catch (error) {
       console.error('删除学生失败:', error)
       toast.error('删除学生失败')
+    } finally {
+      setDeleteAlertOpen(false)
+      setDeletingStudent(null)
     }
   }
 
@@ -106,17 +153,17 @@ export default function StudentsPage() {
     setDialogOpen(true)
   }
 
-  // 批量归档
-  const handleBatchArchive = async () => {
+  // 批量归档 - 打开确认对话框
+  const handleBatchArchive = () => {
     if (selectedStudents.length === 0) {
       toast.warning('请先选择学生')
       return
     }
+    setArchiveAlertOpen(true)
+  }
 
-    if (!confirm(`确定要归档 ${selectedStudents.length} 个学生吗？`)) {
-      return
-    }
-
+  // 确认批量归档
+  const confirmBatchArchive = async () => {
     try {
       const response = await fetch('/api/students/batch/archive', {
         method: 'POST',
@@ -134,10 +181,13 @@ export default function StudentsPage() {
       }
 
       toast.success('学生已批量归档')
+      setSelectedStudents([])
       fetchStudents()
     } catch (error) {
       console.error('批量归档失败:', error)
       toast.error('批量归档失败')
+    } finally {
+      setArchiveAlertOpen(false)
     }
   }
 
@@ -205,7 +255,8 @@ export default function StudentsPage() {
     onDelete: handleDelete,
   })
 
-  if (loading) {
+  // 页面初始加载时显示全屏loading
+  if (initialLoading) {
     return (
       <div className="flex h-[450px] items-center justify-center">
         <div className="text-muted-foreground">加载中...</div>
@@ -239,9 +290,16 @@ export default function StudentsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>学生列表</CardTitle>
-              <CardDescription>共 {students.length} 名学生</CardDescription>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-2">
+                <CardTitle>学生列表</CardTitle>
+                <CardDescription>共 {students.length} 名学生</CardDescription>
+              </div>
+              {selectedStudents.length > 0 && (
+                <Badge variant="secondary" className="text-base">
+                  已选择 {selectedStudents.length} 项
+                </Badge>
+              )}
             </div>
             {selectedStudents.length > 0 && (
               <div className="flex gap-2">
@@ -278,8 +336,13 @@ export default function StudentsPage() {
             columns={columns}
             data={students}
             searchKey="name"
-            searchPlaceholder="搜索学生姓名..."
+            searchPlaceholder="搜索学生姓名、学号 (支持多个,用逗号或空格分隔)..."
+            searchValue={searchText}
+            onSearchChange={setSearchText}
+            onSearch={handleSearch}
+            onSearchKeyDown={handleSearchKeyDown}
             onSelectionChange={setSelectedStudents}
+            loading={loading}
             currentPage={currentPage}
             pageSize={pageSize}
             pageCount={pageCount}
@@ -342,6 +405,49 @@ export default function StudentsPage() {
         mode={tagMode}
         onSuccess={handleTagSuccess}
       />
+
+      {/* 删除确认对话框 */}
+      <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除学生</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除学生 <span className="font-semibold">{deletingStudent?.name}</span> 吗？
+              <br />
+              此操作将永久删除该学生的所有信息,包括积分记录、点名记录等,且无法恢复。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 批量归档确认对话框 */}
+      <AlertDialog open={archiveAlertOpen} onOpenChange={setArchiveAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认批量归档</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要归档 <span className="font-semibold">{selectedStudents.length}</span> 个学生吗？
+              <br />
+              归档后的学生将不再显示在主列表中,但可以在&ldquo;归档学生&rdquo;页面查看。
+              <br />
+              归档的学生无法进行任何操作,仅用于数据分析。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBatchArchive}>确认归档</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -60,7 +60,7 @@ export function ApplyRuleDialog({
       if (!response.ok) throw new Error('加载规则失败')
 
       const data = await response.json()
-      setRules(data.rules)
+      setRules(data.data || [])
     } catch (error) {
       console.error('Failed to load rules:', error)
       toast.error('加载规则失败')

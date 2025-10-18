@@ -99,7 +99,12 @@ export async function GET() {
 
       // 最近记录
       prisma.pointRecord.findMany({
-        where: { userId: session.user.id },
+        where: {
+          userId: session.user.id,
+          student: {
+            isArchived: false, // 只显示未归档学生的记录
+          },
+        },
         include: {
           student: {
             select: {
@@ -116,7 +121,12 @@ export async function GET() {
 
       // 最近兑换
       prisma.redemption.findMany({
-        where: { userId: session.user.id },
+        where: {
+          userId: session.user.id,
+          student: {
+            isArchived: false, // 只显示未归档学生的兑换
+          },
+        },
         include: {
           student: {
             select: {

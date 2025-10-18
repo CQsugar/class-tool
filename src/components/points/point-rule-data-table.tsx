@@ -28,6 +28,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { Search } from 'lucide-react'
 import { useState } from 'react'
 
 interface DataTableProps<TData, TValue> {
@@ -43,6 +44,7 @@ interface DataTableProps<TData, TValue> {
   onCategoryFilter: (category: string) => void
   onActiveFilter: (active: string) => void
   categories: string[]
+  loading?: boolean
 }
 
 export function PointRuleDataTable<TData, TValue>({
@@ -58,6 +60,7 @@ export function PointRuleDataTable<TData, TValue>({
   onCategoryFilter,
   onActiveFilter,
   categories,
+  loading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -79,21 +82,33 @@ export function PointRuleDataTable<TData, TValue>({
     },
   })
 
-  const handleSearch = (value: string) => {
-    setSearchValue(value)
-    onSearch(value)
+  const handleSearch = () => {
+    onSearch(searchValue)
+  }
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
   }
 
   return (
     <div className="space-y-4">
       {/* 过滤器区域 */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <Input
-          placeholder="搜索规则名称..."
-          value={searchValue}
-          onChange={e => handleSearch(e.target.value)}
-          className="max-w-sm"
-        />
+        <div className="flex max-w-md flex-1 items-center gap-2">
+          <Input
+            placeholder="搜索规则名称..."
+            value={searchValue}
+            onChange={e => setSearchValue(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+            className="flex-1"
+          />
+          <Button onClick={handleSearch} size="default" className="gap-2">
+            <Search className="h-4 w-4" />
+            查询
+          </Button>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Select onValueChange={value => onTypeFilter(value as PointType | 'all')}>
             <SelectTrigger className="w-[120px]">
@@ -153,7 +168,13 @@ export function PointRuleDataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <div className="text-muted-foreground">加载中...</div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map(cell => (

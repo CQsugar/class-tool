@@ -225,7 +225,7 @@ export function GroupMembersDialog({
                               src={member.student.avatar || undefined}
                               alt={member.student.name}
                             />
-                            <AvatarFallback>{member.student.name[0]}</AvatarFallback>
+                            <AvatarFallback>{member.student.name.slice(0, 2)}</AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="font-medium">{member.student.name}</div>
@@ -293,7 +293,7 @@ export function GroupMembersDialog({
                     />
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={student.avatar || undefined} alt={student.name} />
-                      <AvatarFallback>{student.name[0]}</AvatarFallback>
+                      <AvatarFallback>{student.name.slice(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="font-medium">{student.name}</div>

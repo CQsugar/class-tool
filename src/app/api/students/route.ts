@@ -35,18 +35,25 @@ export async function GET(request: NextRequest) {
     }
 
     // 添加归档状态筛选
-    if (isArchived !== null) {
-      where.isArchived = isArchived
-    }
+    // 如果明确传入isArchived参数则使用该值,否则默认只显示未归档学生
+    where.isArchived = isArchived ?? false
 
     // 添加搜索条件
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { studentNo: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search, mode: 'insensitive' } },
-        { parentPhone: { contains: search, mode: 'insensitive' } },
-      ]
+      // 支持多姓名搜索: 逗号或空格分隔
+      const searchTerms = search
+        .split(/[,，\s]+/)
+        .map(term => term.trim())
+        .filter(term => term.length > 0)
+
+      if (searchTerms.length > 0) {
+        where.OR = searchTerms.flatMap(term => [
+          { name: { contains: term, mode: 'insensitive' } },
+          { studentNo: { contains: term, mode: 'insensitive' } },
+          { phone: { contains: term, mode: 'insensitive' } },
+          { parentPhone: { contains: term, mode: 'insensitive' } },
+        ])
+      }
     }
 
     // 添加性别筛选
@@ -138,6 +145,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '学号已存在' }, { status: 409 })
     }
 
+    console.log('📝 [API POST /api/students] 创建学生:', {
+      userId: user.id,
+      data: { ...validatedData, userId: user.id },
+    })
+
     // 创建学生
     const student = await prisma.student.create({
       data: {
@@ -156,6 +168,14 @@ export async function POST(request: NextRequest) {
           },
         },
       },
+    })
+
+    console.log('✅ [API POST /api/students] 学生创建成功:', {
+      id: student.id,
+      name: student.name,
+      studentNo: student.studentNo,
+      userId: student.userId,
+      isArchived: student.isArchived,
     })
 
     return NextResponse.json(student, { status: 201 })

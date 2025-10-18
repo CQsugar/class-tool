@@ -281,6 +281,32 @@ export function Providers({ children }: { children: ReactNode }) {
         REMEMBER_ME: '记住我',
         ONE_TIME_PASSWORD: '一次性密码',
       }}
+      avatar={{
+        upload: async (file: File) => {
+          const formData = new FormData()
+          formData.append('file', file)
+
+          const res = await fetch('/api/upload?type=avatar', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!res.ok) {
+            throw new Error('上传失败')
+          }
+
+          const { url } = await res.json()
+          return url
+        },
+        delete: async (url: string) => {
+          // 删除头像文件
+          await fetch('/api/upload/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+          })
+        },
+      }}
       account={{}}
     >
       {children}

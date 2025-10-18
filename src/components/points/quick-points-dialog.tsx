@@ -27,12 +27,22 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import { quickPointsSchema, type QuickPointsInput } from '@/lib/validations/point-record'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PointType } from '@prisma/client'
-import { useState } from 'react'
+import { ClipboardList, Minus, Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+
+interface PointRule {
+  id: string
+  name: string
+  points: number
+  type: PointType
+  category: string
+}
 
 interface QuickPointsDialogProps {
   open: boolean
@@ -50,6 +60,10 @@ export function QuickPointsDialog({
   onSuccess,
 }: QuickPointsDialogProps) {
   const [loading, setLoading] = useState(false)
+  const [rules, setRules] = useState<PointRule[]>([])
+  const [showRules, setShowRules] = useState(false)
+  const [ruleTypeFilter, setRuleTypeFilter] = useState<PointType | 'ALL'>('ALL')
+  const [ruleCategoryFilter, setRuleCategoryFilter] = useState<string>('all')
 
   const form = useForm<QuickPointsInput>({
     resolver: zodResolver(quickPointsSchema),
@@ -61,6 +75,44 @@ export function QuickPointsDialog({
       ruleId: null,
     },
   })
+
+  // 加载积分规则
+  useEffect(() => {
+    if (open) {
+      const loadRules = async () => {
+        try {
+          const response = await fetch('/api/points/rules?limit=100&isActive=true')
+          if (!response.ok) return
+
+          const data = await response.json()
+          setRules(data.data || [])
+        } catch (error) {
+          console.error('Failed to load rules:', error)
+        }
+      }
+      loadRules()
+    }
+  }, [open])
+
+  // 获取所有分类
+  const categories = Array.from(new Set(rules.map(r => r.category).filter(Boolean)))
+
+  // 过滤规则
+  const filteredRules = rules.filter(rule => {
+    if (ruleTypeFilter !== 'ALL' && rule.type !== ruleTypeFilter) return false
+    if (ruleCategoryFilter !== 'all' && rule.category !== ruleCategoryFilter) return false
+    return true
+  })
+
+  // 选择规则
+  const handleSelectRule = (rule: PointRule) => {
+    form.setValue('points', Math.abs(rule.points))
+    form.setValue('reason', rule.name)
+    form.setValue('type', rule.type)
+    form.setValue('ruleId', rule.id)
+    setShowRules(false)
+    toast.success(`已选择规则: ${rule.name}`)
+  }
 
   // 当选中的学生改变时更新表单
   if (selectedStudentIds.length > 0 && form.getValues('studentIds').length === 0) {
@@ -100,7 +152,7 @@ export function QuickPointsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>快速加减分</DialogTitle>
           <DialogDescription>
@@ -111,13 +163,125 @@ export function QuickPointsDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* 从规则选择按钮 */}
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowRules(!showRules)}
+              >
+                <ClipboardList className="mr-2 h-4 w-4" />
+                {showRules ? '隐藏规则列表' : '从规则选择'}
+              </Button>
+            </div>
+
+            {/* 规则选择面板 */}
+            {showRules && (
+              <div className="space-y-3 rounded-lg border p-3">
+                {/* 筛选器 */}
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex gap-1 rounded-lg border p-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={ruleTypeFilter === 'ALL' ? 'default' : 'ghost'}
+                      onClick={() => setRuleTypeFilter('ALL')}
+                      className="h-7 text-xs"
+                    >
+                      全部
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={ruleTypeFilter === PointType.ADD ? 'default' : 'ghost'}
+                      onClick={() => setRuleTypeFilter(PointType.ADD)}
+                      className="h-7 text-xs text-green-600 hover:text-green-700"
+                    >
+                      <Plus className="mr-1 h-3 w-3" />
+                      加分
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={ruleTypeFilter === PointType.SUBTRACT ? 'default' : 'ghost'}
+                      onClick={() => setRuleTypeFilter(PointType.SUBTRACT)}
+                      className="h-7 text-xs text-red-600 hover:text-red-700"
+                    >
+                      <Minus className="mr-1 h-3 w-3" />
+                      减分
+                    </Button>
+                  </div>
+
+                  {categories.length > 0 && (
+                    <Select value={ruleCategoryFilter} onValueChange={setRuleCategoryFilter}>
+                      <SelectTrigger className="h-7 w-[120px] text-xs">
+                        <SelectValue placeholder="选择分类" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全部分类</SelectItem>
+                        {categories.map(cat => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+
+                {/* 规则列表 */}
+                <div className="max-h-[250px] overflow-y-auto">
+                  {filteredRules.length === 0 ? (
+                    <div className="text-muted-foreground py-8 text-center text-sm">
+                      {rules.length === 0 ? '暂无可用规则' : '没有符合条件的规则'}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {filteredRules.map(rule => (
+                        <Button
+                          key={rule.id}
+                          type="button"
+                          variant="outline"
+                          className="h-auto flex-col items-start p-2 text-left"
+                          onClick={() => handleSelectRule(rule)}
+                        >
+                          <div className="flex w-full items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-xs font-medium">{rule.name}</div>
+                              {rule.category && (
+                                <div className="text-muted-foreground truncate text-xs">
+                                  {rule.category}
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className={cn(
+                                'shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold',
+                                rule.type === PointType.ADD
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              )}
+                            >
+                              {rule.type === PointType.ADD ? '+' : '-'}
+                              {Math.abs(rule.points)}
+                            </div>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>操作类型</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="选择操作类型" />

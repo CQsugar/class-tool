@@ -11,7 +11,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Search } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -52,6 +52,12 @@ interface DataTableProps<TData, TValue> {
   totalItems?: number
   onPageChange?: (page: number) => void
   onPageSizeChange?: (pageSize: number) => void
+  // 服务端搜索支持
+  searchValue?: string
+  onSearchChange?: (value: string) => void
+  onSearch?: () => void // 搜索按钮点击回调
+  onSearchKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void // 搜索框回车回调
+  loading?: boolean // 加载状态
 }
 
 export function DataTable<TData, TValue>({
@@ -67,6 +73,11 @@ export function DataTable<TData, TValue>({
   totalItems,
   onPageChange,
   onPageSizeChange,
+  searchValue,
+  onSearchChange,
+  onSearch,
+  onSearchKeyDown,
+  loading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -133,14 +144,33 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center gap-2 py-4">
         {searchKey && (
-          <Input
-            placeholder={searchPlaceholder}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-            onChange={event => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
-            className="max-w-sm"
-          />
+          <div className="flex max-w-md flex-1 items-center gap-2">
+            <Input
+              placeholder={searchPlaceholder}
+              value={
+                onSearchChange
+                  ? searchValue || ''
+                  : ((table.getColumn(searchKey)?.getFilterValue() as string) ?? '')
+              }
+              onChange={event => {
+                if (onSearchChange) {
+                  onSearchChange(event.target.value)
+                } else {
+                  table.getColumn(searchKey)?.setFilterValue(event.target.value)
+                }
+              }}
+              onKeyDown={onSearchKeyDown}
+              className="flex-1"
+            />
+            {onSearch && (
+              <Button onClick={onSearch} size="default" className="gap-2">
+                <Search className="h-4 w-4" />
+                查询
+              </Button>
+            )}
+          </div>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -184,12 +214,23 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <div className="text-muted-foreground">加载中...</div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  onClick={() => onRowClick?.(row.original)}
+                  onClick={() => {
+                    // 切换行选中状态
+                    row.toggleSelected()
+                    // 如果有自定义回调，也执行它
+                    onRowClick?.(row.original)
+                  }}
                   className={onRowClick ? 'cursor-pointer' : ''}
                 >
                   {row.getVisibleCells().map(cell => (

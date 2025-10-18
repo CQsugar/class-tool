@@ -72,6 +72,11 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         members: {
+          where: {
+            student: {
+              isArchived: false, // 只包含未归档的学生
+            },
+          },
           include: {
             student: {
               select: {
