@@ -70,6 +70,8 @@ export const pointRecordColumns: ColumnDef<PointRecordColumn>[] = [
     cell: ({ row }) => {
       const points = row.getValue('points') as number
       const type = row.original.type
+      // 数据库中points字段已经是绝对值，直接使用
+      const displayPoints = Math.abs(points) // 防御性编程，确保显示绝对值
       return (
         <span
           className={`font-semibold ${
@@ -82,7 +84,7 @@ export const pointRecordColumns: ColumnDef<PointRecordColumn>[] = [
         >
           {type === PointType.ADD && '+'}
           {type === PointType.SUBTRACT && '-'}
-          {type === PointType.RESET ? `→ ${points}` : Math.abs(points)}
+          {type === PointType.RESET ? `→ ${points}` : displayPoints}
         </span>
       )
     },

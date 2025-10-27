@@ -9,6 +9,7 @@ import type { ReactNode } from 'react'
 
 export function Providers({ children }: { children: ReactNode }) {
   const router = useRouter()
+  const disableSignup = process.env.NEXT_PUBLIC_DISABLE_SIGNUP === 'true'
 
   return (
     <AuthUIProvider
@@ -20,6 +21,7 @@ export function Providers({ children }: { children: ReactNode }) {
         router.refresh()
       }}
       Link={Link}
+      signUp={!disableSignup}
       localization={{
         // === 认证相关页面 ===
         SIGN_IN: '登录',
@@ -61,10 +63,6 @@ export function Providers({ children }: { children: ReactNode }) {
         UPLOAD: '上传',
         LINK: '关联',
         UNLINK: '取消关联',
-
-        // === 账户链接 ===
-        DONT_HAVE_AN_ACCOUNT: '还没有账户？',
-        ALREADY_HAVE_AN_ACCOUNT: '已有账户？',
 
         // === 忘记密码流程 ===
         FORGOT_PASSWORD_LINK: '忘记了密码？',

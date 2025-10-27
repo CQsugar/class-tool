@@ -1,8 +1,8 @@
+import { PrismaClient } from '@prisma/client'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
 import { multiSession } from 'better-auth/plugins'
-import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -15,7 +15,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // 开发阶段暂时禁用邮箱验证
-    disableSignUp: false, // 明确启用注册功能
+    disableSignUp: process.env.NEXT_PUBLIC_DISABLE_SIGNUP === 'true', // 支持通过环境变量禁用注册
   },
 
   // 账户字段映射配置

@@ -203,7 +203,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             data: {
               userId: user.id,
               studentId: winnerId,
-              points: existingSession.rewardPoints,
+              points: Math.abs(existingSession.rewardPoints), // 确保存储绝对值
               type: 'ADD',
               reason: `PK胜利奖励${existingSession.topic ? `: ${existingSession.topic}` : ''}`,
             },
@@ -238,7 +238,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               data: {
                 userId: user.id,
                 studentId: member.studentId,
-                points: existingSession.rewardPoints,
+                points: Math.abs(existingSession.rewardPoints), // 确保存储绝对值
                 type: 'ADD',
                 reason: `PK胜利奖励(分组)${existingSession.topic ? `: ${existingSession.topic}` : ''}`,
               },

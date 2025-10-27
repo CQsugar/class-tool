@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         students.map(student =>
           tx.pointRecord.create({
             data: {
-              points: type === PointType.RESET ? points : actualPoints,
+              points: type === PointType.RESET ? points : Math.abs(points), // 始终存储绝对值
               reason,
               type,
               studentId: student.id,
