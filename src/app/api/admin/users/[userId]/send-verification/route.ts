@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -18,9 +19,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
 
     const { userId } = await params
 
+    // 检查目标用户
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!targetUser) {
+      return NextResponse.json({ message: '用户不存在' }, { status: 404 })
+    }
+
     // TODO: 实现邮件验证功能
     // 这需要配置邮件服务 (Better Auth 支持邮件验证)
-    // 暂时返回成功响应
+    auth.api.sendVerificationEmail({
+      body: {
+        email: targetUser.email,
+      },
+      headers: await headers(),
+    })
 
     return NextResponse.json({ message: '验证邮件已发送' })
   } catch (error) {

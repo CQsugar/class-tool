@@ -41,9 +41,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ us
     }
 
     // 更新角色
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role },
+    await auth.api.setRole({
+      body: {
+        userId: targetUser.id,
+        role: role,
+      },
+      // This endpoint requires session cookies.
+      headers: await headers(),
     })
 
     return NextResponse.json({ message: '角色已更新' })

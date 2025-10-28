@@ -43,20 +43,29 @@ export function BanUserDialog({ open, user, onOpenChange, onSuccess }: BanUserDi
     customDays: '',
   })
 
+  // 重置表单数据当对话框关闭时
+  const handleOpenChange = (newOpen: boolean) => {
+    onOpenChange(newOpen)
+    if (!newOpen) {
+      setFormData({
+        reason: '',
+        duration: 'permanent',
+        customDays: '',
+      })
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      let banExpires: string | undefined
+      let banExpiresInDays: number | undefined
       if (formData.duration !== 'permanent') {
-        const days =
+        banExpiresInDays =
           formData.duration === 'custom'
             ? parseInt(formData.customDays)
             : parseInt(formData.duration)
-        const expiresDate = new Date()
-        expiresDate.setDate(expiresDate.getDate() + days)
-        banExpires = expiresDate.toISOString()
       }
 
       const response = await fetch(`/api/admin/users/${user.id}/ban`, {
@@ -64,7 +73,7 @@ export function BanUserDialog({ open, user, onOpenChange, onSuccess }: BanUserDi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reason: formData.reason,
-          banExpires,
+          banExpiresInDays,
         }),
       })
 
@@ -74,7 +83,7 @@ export function BanUserDialog({ open, user, onOpenChange, onSuccess }: BanUserDi
       }
 
       toast.success('用户已封禁')
-      onOpenChange(false)
+      handleOpenChange(false)
       onSuccess()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '封禁失败')
@@ -84,7 +93,7 @@ export function BanUserDialog({ open, user, onOpenChange, onSuccess }: BanUserDi
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>封禁用户</DialogTitle>
@@ -142,7 +151,7 @@ export function BanUserDialog({ open, user, onOpenChange, onSuccess }: BanUserDi
           )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               取消
             </Button>
             <Button type="submit" disabled={loading} variant="destructive">

@@ -64,7 +64,7 @@ async function main() {
   const adminPassword = generateRandomPassword(10)
 
   // 创建管理员用户
-  const adminUser = await auth.api.signUpEmail({
+  const adminUser = await auth.api.createUser({
     body: {
       email: 'admin@example.com',
       password: adminPassword,
@@ -100,7 +100,7 @@ async function main() {
 
   // 创建普通教师用户
   const teacherPassword = generateRandomPassword(10)
-  const teacherUser = await auth.api.signUpEmail({
+  const teacherUser = await auth.api.createUser({
     body: {
       email: 'teacher@example.com',
       password: teacherPassword,

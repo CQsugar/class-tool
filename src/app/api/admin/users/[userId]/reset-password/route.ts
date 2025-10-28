@@ -1,6 +1,5 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { hash } from 'bcryptjs'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -36,25 +35,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
       return NextResponse.json({ message: '用户不存在' }, { status: 404 })
     }
 
-    // 加密密码
-    const hashedPassword = await hash(newPassword, 10)
-
-    // 查找用户的账户记录
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: userId,
-        providerId: 'credential',
-      },
-    })
-
-    if (!account) {
-      return NextResponse.json({ message: '未找到用户账户' }, { status: 404 })
-    }
-
     // 更新密码
-    await prisma.account.update({
-      where: { id: account.id },
-      data: { password: hashedPassword },
+    await auth.api.setUserPassword({
+      body: {
+        newPassword: newPassword,
+        userId: userId,
+      },
+      headers: await headers(),
     })
 
     return NextResponse.json({ message: '密码已重置' })

@@ -92,7 +92,7 @@ export function CreateUserDialog({ open, onOpenChange, onSuccess }: CreateUserDi
               required
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
-              placeholder="张三"
+              placeholder="请输入用户名"
             />
           </div>
 

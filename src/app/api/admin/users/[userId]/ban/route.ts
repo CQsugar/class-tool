@@ -19,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
 
     const { userId } = await params
     const body = await request.json()
-    const { reason, banExpires } = body
+    const { reason, banExpiresInDays } = body
 
     // 验证输入
     if (!reason) {
@@ -35,24 +35,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
       return NextResponse.json({ message: '用户不存在' }, { status: 404 })
     }
 
-    // 不能封禁管理员
-    if (targetUser.role === 'admin') {
-      return NextResponse.json({ message: '无法封禁管理员' }, { status: 403 })
-    }
-
     // 不能封禁自己
     if (targetUser.id === session.user.id) {
       return NextResponse.json({ message: '无法封禁自己' }, { status: 403 })
     }
 
-    // 封禁用户
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        banned: true,
+    // 计算过期时间（天数转换为秒数）
+    let banExpiresIn: number | undefined
+    if (banExpiresInDays && banExpiresInDays > 0) {
+      banExpiresIn = banExpiresInDays * 24 * 60 * 60 // 天数转换为秒数
+    }
+
+    await auth.api.banUser({
+      body: {
+        userId: targetUser.id,
         banReason: reason,
-        banExpires: banExpires ? new Date(banExpires) : null,
+        banExpiresIn: banExpiresIn,
       },
+      headers: await headers(),
     })
 
     return NextResponse.json({ message: '用户已封禁' })

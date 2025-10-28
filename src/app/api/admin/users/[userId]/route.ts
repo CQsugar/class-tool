@@ -42,8 +42,11 @@ export async function DELETE(
     }
 
     // 删除用户
-    await prisma.user.delete({
-      where: { id: userId },
+    await auth.api.removeUser({
+      body: {
+        userId: targetUser.id,
+      },
+      headers: await headers(),
     })
 
     return NextResponse.json({ message: '用户已删除' })

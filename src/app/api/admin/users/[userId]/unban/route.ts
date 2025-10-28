@@ -29,13 +29,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ use
     }
 
     // 解除封禁
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        banned: false,
-        banReason: null,
-        banExpires: null,
+    await auth.api.unbanUser({
+      body: {
+        userId: targetUser.id,
       },
+      headers: await headers(),
     })
 
     return NextResponse.json({ message: '已解除封禁' })
