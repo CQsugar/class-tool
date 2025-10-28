@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: '认证 - 班级管理平台',
-  description: '班主任班级管理平台用户认证',
+  title: '认证 - 工具平台',
+  description: '工具平台用户认证',
 }
 
 interface AuthLayoutProps {

@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: '班主任班级管理平台',
-  description: '专为班主任设计的班级管理平台，包含学生信息管理、积分系统、随机点名等功能',
+  title: '工具平台',
+  description: '一个强大且易用的在线个人工具平台',
 }
 
 export default function RootLayout({
