@@ -3,11 +3,41 @@ import { auth } from '../src/lib/auth'
 
 const prisma = new PrismaClient()
 
+// 生成随机密码（10位，包含大小写字母和数字）
+function generateRandomPassword(length = 10): string {
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz'
+  const numbers = '0123456789'
+  const symbols = '@#$%'
+  const allChars = uppercase + lowercase + numbers + symbols
+
+  let password = ''
+  // 确保至少包含一个大写字母、一个小写字母、一个数字和一个特殊字符
+  password += uppercase[Math.floor(Math.random() * uppercase.length)]
+  password += lowercase[Math.floor(Math.random() * lowercase.length)]
+  password += numbers[Math.floor(Math.random() * numbers.length)]
+  password += symbols[Math.floor(Math.random() * symbols.length)]
+
+  // 填充剩余字符
+  for (let i = password.length; i < length; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)]
+  }
+
+  // 打乱密码字符顺序
+  return password
+    .split('')
+    .sort(() => Math.random() - 0.5)
+    .join('')
+}
+
 async function main() {
   console.log('🌱 开始数据库种子数据初始化...')
+  console.log(`📍 运行环境: ${process.env.NODE_ENV || 'development'}`)
+
+  const isProduction = process.env.NODE_ENV === 'production'
 
   // 清理现有数据（仅用于开发环境）
-  if (process.env.NODE_ENV === 'development') {
+  if (!isProduction) {
     console.log('🧹 清理现有数据...')
     await prisma.pointRecord.deleteMany()
     await prisma.redemption.deleteMany()
@@ -27,15 +57,18 @@ async function main() {
     await prisma.user.deleteMany()
   }
 
-  // 1. 创建示例用户（管理员和普通教师）
-  console.log('👤 创建示例用户...')
+  // 1. 创建管理员用户（所有环境都创建）
+  console.log('👤 创建管理员用户...')
+
+  // 生成随机密码
+  const adminPassword = generateRandomPassword(10)
 
   // 创建管理员用户
   const adminUser = await auth.api.signUpEmail({
     body: {
       email: 'admin@example.com',
-      password: 'Admin@123456',
-      name: '管理员',
+      password: adminPassword,
+      name: '系统管理员',
     },
   })
 
@@ -48,14 +81,29 @@ async function main() {
     },
   })
 
-  console.log(`✅ 创建管理员用户: ${adminUser.user.name} (${adminUser.user.email})`)
-  console.log(`   密码: Admin@123456`)
+  console.log(`\n✅ 管理员用户创建成功!`)
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+  console.log(`📧 邮箱: ${adminUser.user.email}`)
+  console.log(`🔑 密码: ${adminPassword}`)
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+  console.log(`⚠️  请立即登录并修改密码！\n`)
+
+  // 生产环境仅创建管理员，不创建其他测试数据
+  if (isProduction) {
+    console.log('✨ 生产环境初始化完成！')
+    console.log('   仅创建管理员账号，未创建测试数据')
+    return
+  }
+
+  // 以下为开发环境的测试数据创建
+  console.log('👤 创建测试用户（仅开发环境）...')
 
   // 创建普通教师用户
+  const teacherPassword = generateRandomPassword(10)
   const teacherUser = await auth.api.signUpEmail({
     body: {
       email: 'teacher@example.com',
-      password: 'Teacher@123456',
+      password: teacherPassword,
       name: '张老师',
     },
   })
@@ -69,7 +117,7 @@ async function main() {
   })
 
   console.log(`✅ 创建教师用户: ${teacherUser.user.name} (${teacherUser.user.email})`)
-  console.log(`   密码: Teacher@123456`)
+  console.log(`   密码: ${teacherPassword}`)
 
   // 2. 创建学生分组（使用教师用户）
   console.log('👥 创建学生分组...')
@@ -394,7 +442,7 @@ async function main() {
 
   console.log(`✅ 创建 ${storeItems.length} 个商城商品`)
 
-  console.log('✨ 数据库种子数据初始化完成！')
+  console.log('\n✨ 数据库种子数据初始化完成！')
   console.log('\n📊 数据统计:')
   console.log(`  - 用户: 2 (1 管理员, 1 教师)`)
   console.log(`  - 学生: ${students.length}`)
@@ -402,11 +450,9 @@ async function main() {
   console.log(`  - 标签: 3`)
   console.log(`  - 积分规则: ${pointRules.length}`)
   console.log(`  - 商城商品: ${storeItems.length}`)
-  console.log('\n🔐 登录信息:')
-  console.log(`  管理员: admin@example.com / Admin@123456`)
-  console.log(`  教师: teacher@example.com / Teacher@123456`)
-  console.log('\n💡 提示: 使用以下命令运行种子数据:')
-  console.log('   pnpm db:seed')
+  console.log('\n🔐 开发环境登录信息:')
+  console.log(`  教师: teacher@example.com / ${teacherPassword}`)
+  console.log('\n💡 提示: 密码为随机生成，请保存好')
 }
 
 main()
