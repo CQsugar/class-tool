@@ -104,7 +104,7 @@ export function StudentDetailDialog({ open, onOpenChange, studentId }: StudentDe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl min-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>学生详情</DialogTitle>
         </DialogHeader>
@@ -215,7 +215,7 @@ export function StudentDetailDialog({ open, onOpenChange, studentId }: StudentDe
                               {formatDate(record.createdAt)}
                             </TableCell>
                             <TableCell>
-                              {record.type === 'add' ? (
+                              {record.type === 'ADD' ? (
                                 <Badge
                                   variant="outline"
                                   className="border-green-300 bg-green-500/10 text-green-700"
@@ -223,7 +223,7 @@ export function StudentDetailDialog({ open, onOpenChange, studentId }: StudentDe
                                   <TrendingUp className="mr-1 h-3 w-3" />
                                   加分
                                 </Badge>
-                              ) : (
+                              ) : record.type === 'SUBTRACT' ? (
                                 <Badge
                                   variant="outline"
                                   className="border-red-300 bg-red-500/10 text-red-700"
@@ -231,17 +231,28 @@ export function StudentDetailDialog({ open, onOpenChange, studentId }: StudentDe
                                   <TrendingDown className="mr-1 h-3 w-3" />
                                   减分
                                 </Badge>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="border-blue-300 bg-blue-500/10 text-blue-700"
+                                >
+                                  重置
+                                </Badge>
                               )}
                             </TableCell>
                             <TableCell>
                               <span
                                 className={
-                                  record.type === 'add'
+                                  record.type === 'ADD'
                                     ? 'font-semibold text-green-600'
-                                    : 'font-semibold text-red-600'
+                                    : record.type === 'SUBTRACT'
+                                      ? 'font-semibold text-red-600'
+                                      : 'font-semibold text-blue-600'
                                 }
                               >
-                                {record.type === 'add' ? '+' : '-'}
+                                {record.type === 'ADD' && '+'}
+                                {record.type === 'SUBTRACT' && '-'}
+                                {record.type === 'RESET' ? `→ ` : ''}
                                 {Math.abs(record.points)}
                               </span>
                             </TableCell>

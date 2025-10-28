@@ -46,3 +46,14 @@ next-env.d.ts
 # uploads
 /uploads/*
 !/uploads/.gitkeep
+
+# backups
+/backups/*
+!/backups/.gitkeep
+
+# SSL certificates
+/ssl/*
+!/ssl/.gitkeep
+
+# production environment
+.env.production

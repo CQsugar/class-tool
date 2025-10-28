@@ -1,0 +1,81 @@
+# ==============================================
+# Docker 忽略文件
+# ==============================================
+
+# 依赖目录
+node_modules
+.pnpm-store
+
+# 构建产物
+.next
+out
+dist
+build
+
+# 缓存文件
+.turbo
+.eslintcache
+.tsbuildinfo
+
+# 环境变量（敏感信息）
+.env
+.env*.local
+.env.production
+
+# 开发工具
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# 文档
+README.md
+docs
+*.md
+
+# 日志
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 测试
+coverage
+.nyc_output
+jest.config.js
+vitest.config.ts
+
+# 临时文件
+tmp
+temp
+*.tmp
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 上传文件（生产环境应使用外部存储）
+uploads/*
+!uploads/.gitkeep
+
+# 数据库文件
+*.db
+*.db-journal
+*.sqlite
+
+# 备份文件
+*.backup
+*.bak
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml

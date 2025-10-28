@@ -68,6 +68,7 @@
 - `src/app/api/students/tags/students/remove/route.ts` - 批量从标签移除学生API
 - `src/app/api/students/tags/batch/add/route.ts` - 批量为学生添加标签API
 - `src/app/api/students/tags/batch/remove/route.ts` - 批量移除学生标签API
+- `src/app/api/health/route.ts` - 健康检查API (Docker 容器健康检查)
 - `src/app/(dashboard)/points/page.tsx` - 积分规则管理页面
 - `src/app/(dashboard)/points/records/page.tsx` - 积分记录查询页面
 - `src/app/(dashboard)/students/groups/page.tsx` - 学生分组管理页面
@@ -90,9 +91,19 @@
 - `src/components/students/tag-students-dialog.tsx` - 标签学生管理对话框
 - `src/components/students/batch-tag-dialog.tsx` - 批量标签操作对话框
 - `prisma/schema.prisma` - 数据库模型定义
-- `prisma/seed.ts` - 数据库种子文件
+- `prisma/seed.ts` - 数据库种子文件（包含示例数据）
 - `middleware.ts` - Next.js中间件，包含安全头设置和安全监控
 - `.env.example` - 环境变量示例文件
+- `.env.production.example` - 生产环境配置示例文件
+- `Dockerfile` - 生产环境 Docker 镜像配置
+- `.dockerignore` - Docker 构建忽略文件
+- `docker-compose.prod.yml` - 生产环境 Docker Compose 配置
+- `nginx.conf` - Nginx 反向代理配置
+- `deploy.sh` - 生产环境自动部署脚本
+- `scripts/backup.sh` - 数据库备份脚本
+- `scripts/restore.sh` - 数据库恢复脚本
+- `docs/deployment-guide.md` - 完整部署指南文档
+- `docs/quick-start.md` - 快速部署指南文档
 - `components.json` - shadcn/ui配置文件
 
 ### 注意事项
@@ -170,11 +181,11 @@
   - [ ] 7.6 添加归档前数据备份机制
   - [ ] 7.7 创建归档日志和审计功能
 
-- [ ] 8.0 系统集成和部署优化
+- [x] 8.0 系统集成和部署优化 (部分完成 25%) 🔄
   - [ ] 8.1 执行端到端功能验证和用户流程测试
   - [ ] 8.2 进行性能测试和优化(支持50+学生)
-  - [ ] 8.3 实现数据库迁移和种子数据
-  - [ ] 8.4 配置生产环境部署流程
+  - [x] 8.3 实现数据库种子数据 ✅
+  - [x] 8.4 配置生产环境部署流程 ✅
   - [ ] 8.5 设置监控和错误日志记录
   - [ ] 8.6 创建用户文档和部署指南
   - [ ] 8.7 进行安全审计和漏洞扫描

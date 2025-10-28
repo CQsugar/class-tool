@@ -8,6 +8,9 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Docker 优化：启用 standalone 输出模式
+  output: 'standalone',
+
   images: {
     remotePatterns: [
       {
