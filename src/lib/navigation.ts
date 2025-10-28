@@ -5,6 +5,7 @@ import {
   Phone,
   Store,
   User,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -19,6 +20,7 @@ export interface NavItem {
   icon?: LucideIcon
   isActive?: boolean
   items?: NavSubItem[]
+  requiresAdmin?: boolean // 是否需要管理员权限
 }
 
 export interface NavGroup {
@@ -130,6 +132,12 @@ export const navGroups: NavGroup[] = [
   {
     groupLabel: '系统设置',
     items: [
+      {
+        title: '用户管理',
+        url: '/admin/users',
+        icon: Users,
+        requiresAdmin: true, // 需要管理员权限
+      },
       {
         title: '个人设置',
         url: '/account/settings',

@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
-import { multiSession } from 'better-auth/plugins'
+import { admin, multiSession } from 'better-auth/plugins'
 
 const prisma = new PrismaClient()
 
@@ -23,6 +23,30 @@ export const auth = betterAuth({
     fields: {
       accountId: 'accountId',
       providerId: 'providerId',
+    },
+  },
+
+  // 用户配置
+  user: {
+    additionalFields: {
+      role: {
+        type: 'string',
+        required: false,
+        defaultValue: 'user',
+      },
+      banned: {
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+      },
+      banReason: {
+        type: 'string',
+        required: false,
+      },
+      banExpires: {
+        type: 'date',
+        required: false,
+      },
     },
   },
 
@@ -51,6 +75,18 @@ export const auth = betterAuth({
 
   // Next.js 插件配置 - 必须放在最后
   plugins: [
+    admin({
+      // 定义管理员角色
+      async isAdmin(user: { role: string }) {
+        return user.role === 'admin'
+      },
+      // 允许的管理员角色
+      adminRoles: ['admin'],
+      // 默认角色
+      defaultRole: 'user',
+      // 冒充会话持续时间（1小时）
+      impersonationSessionDuration: 60 * 60,
+    }),
     multiSession({
       maximumSessions: 5, // 每个用户最多5个活动会话
     }),

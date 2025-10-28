@@ -100,7 +100,18 @@ cd class-tool
 
 ## 🚀 Docker 部署
 
-### 1. 配置环境变量
+### 部署方式选择
+
+本项目提供两种反向代理方案:
+
+1. **Traefik** (推荐) - 自动 HTTPS 证书管理
+2. **Nginx** - 传统反向代理,需手动配置证书
+
+### 方式一: 使用 Traefik (推荐)
+
+Traefik 可自动从 Let's Encrypt 获取和续期 SSL 证书。
+
+#### 1. 配置环境变量
 
 ```bash
 # 复制环境变量模板
@@ -124,11 +135,77 @@ POSTGRES_PASSWORD=YOUR_STRONG_PASSWORD_HERE
 # 认证密钥（使用 openssl rand -hex 32 生成）
 BETTER_AUTH_SECRET=YOUR_32_CHAR_SECRET_KEY
 
+# 数据持久化目录
+DATA_DIR=./data
+
 # 是否禁用注册（建议设为 true）
 NEXT_PUBLIC_DISABLE_SIGNUP=true
 ```
 
-### 2. 生成安全密钥
+#### 2. 配置 Traefik
+
+编辑 `traefik.toml` 文件,修改邮箱地址（用于 Let's Encrypt 通知）:
+
+```toml
+[certificatesResolvers.letsencrypt.acme]
+  email = "your-email@example.com"  # 修改为你的邮箱
+```
+
+#### 3. 创建数据目录
+
+```bash
+# 创建数据持久化目录
+mkdir -p data/{postgres,uploads,letsencrypt}
+
+# 设置 Let's Encrypt 证书存储文件权限
+touch data/letsencrypt/acme.json
+chmod 600 data/letsencrypt/acme.json
+```
+
+#### 4. 启动服务
+
+```bash
+# 使用 Traefik 配置启动
+docker compose -f docker-compose.traefik.yml up -d
+
+# 查看服务状态
+docker compose -f docker-compose.traefik.yml ps
+
+# 查看日志
+docker compose -f docker-compose.traefik.yml logs -f
+```
+
+#### 5. 访问应用
+
+- **应用地址**: https://your-domain.com
+- **Traefik Dashboard**: https://traefik.your-domain.com (默认用户名/密码: admin/admin)
+
+> ⚠️ **重要**: 生产环境务必修改 Traefik Dashboard 的认证密码!
+
+生成新密码:
+
+```bash
+# 安装 htpasswd
+sudo apt install apache2-utils
+
+# 生成认证字符串
+echo $(htpasswd -nb admin your-new-password) | sed -e s/\\$/\\$\\$/g
+```
+
+然后更新 `docker-compose.traefik.yml` 中的 `basicauth.users` 标签。
+
+### 方式二: 使用 Nginx
+
+如果你更喜欢传统的 Nginx 反向代理:
+
+#### 1. 配置环境变量
+
+```bash
+cp .env.production.example .env.production
+nano .env.production
+```
+
+#### 2. 生成安全密钥
 
 ```bash
 # 生成 Better Auth 密钥

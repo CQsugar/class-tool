@@ -12,11 +12,26 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { useSession } from '@/lib/auth-client'
 import { navGroups } from '@/lib/navigation'
+import { filterNavByPermission } from '@/lib/permissions'
 import { UserButton } from '@daveyplate/better-auth-ui'
 import Link from 'next/link'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession()
+  const user = session?.user
+
+  // 基于用户权限过滤导航菜单
+  const filteredNavGroups = React.useMemo(() => {
+    return navGroups
+      .map(group => ({
+        ...group,
+        items: filterNavByPermission(group.items, user),
+      }))
+      .filter(group => group.items.length > 0) // 移除没有可见菜单项的分组
+  }, [user])
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -36,7 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {navGroups.map(group => (
+        {filteredNavGroups.map(group => (
           <Nav key={group.groupLabel} items={group.items} groupLabel={group.groupLabel} />
         ))}
       </SidebarContent>

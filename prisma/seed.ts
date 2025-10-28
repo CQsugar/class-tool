@@ -1,4 +1,5 @@
 import { Gender, ItemType, PointType, PrismaClient } from '@prisma/client'
+import { auth } from '../src/lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -26,34 +27,58 @@ async function main() {
     await prisma.user.deleteMany()
   }
 
-  // 1. 创建示例用户
+  // 1. 创建示例用户（管理员和普通教师）
   console.log('👤 创建示例用户...')
-  const demoUser = await prisma.user.upsert({
-    where: { email: 'teacher@example.com' },
-    update: {},
-    create: {
-      email: 'teacher@example.com',
-      name: '张老师',
-      emailVerified: true,
-      accounts: {
-        create: {
-          accountId: 'demo-account',
-          providerId: 'credential',
-          password: '$2a$10$XYZ...', // 实际使用时需要正确的哈希密码
-        },
-      },
+
+  // 创建管理员用户
+  const adminUser = await auth.api.signUpEmail({
+    body: {
+      email: 'admin@example.com',
+      password: 'Admin@123456',
+      name: '管理员',
     },
   })
-  console.log(`✅ 创建用户: ${demoUser.name}`)
 
-  // 2. 创建学生分组
+  // 更新管理员角色和验证状态
+  await prisma.user.update({
+    where: { id: adminUser.user.id },
+    data: {
+      role: 'admin',
+      emailVerified: true,
+    },
+  })
+
+  console.log(`✅ 创建管理员用户: ${adminUser.user.name} (${adminUser.user.email})`)
+  console.log(`   密码: Admin@123456`)
+
+  // 创建普通教师用户
+  const teacherUser = await auth.api.signUpEmail({
+    body: {
+      email: 'teacher@example.com',
+      password: 'Teacher@123456',
+      name: '张老师',
+    },
+  })
+
+  // 更新教师验证状态
+  await prisma.user.update({
+    where: { id: teacherUser.user.id },
+    data: {
+      emailVerified: true,
+    },
+  })
+
+  console.log(`✅ 创建教师用户: ${teacherUser.user.name} (${teacherUser.user.email})`)
+  console.log(`   密码: Teacher@123456`)
+
+  // 2. 创建学生分组（使用教师用户）
   console.log('👥 创建学生分组...')
   const group1 = await prisma.studentGroup.create({
     data: {
       name: '第一小组',
       description: '班级第一学习小组',
       color: '#3b82f6',
-      userId: demoUser.id,
+      userId: teacherUser.user.id,
     },
   })
 
@@ -62,7 +87,7 @@ async function main() {
       name: '第二小组',
       description: '班级第二学习小组',
       color: '#10b981',
-      userId: demoUser.id,
+      userId: teacherUser.user.id,
     },
   })
 
@@ -71,7 +96,7 @@ async function main() {
       name: '第三小组',
       description: '班级第三学习小组',
       color: '#f59e0b',
-      userId: demoUser.id,
+      userId: teacherUser.user.id,
     },
   })
 
@@ -83,7 +108,7 @@ async function main() {
     data: {
       name: '班委',
       color: '#ef4444',
-      userId: demoUser.id,
+      userId: teacherUser.user.id,
     },
   })
 
@@ -91,7 +116,7 @@ async function main() {
     data: {
       name: '三好学生',
       color: '#f59e0b',
-      userId: demoUser.id,
+      userId: teacherUser.user.id,
     },
   })
 
@@ -99,7 +124,7 @@ async function main() {
     data: {
       name: '活跃',
       color: '#10b981',
-      userId: demoUser.id,
+      userId: teacherUser.user.id,
     },
   })
 
@@ -195,7 +220,7 @@ async function main() {
     const student = await prisma.student.create({
       data: {
         ...data,
-        userId: demoUser.id,
+        userId: teacherUser.user.id,
         parentPhone: `138${Math.floor(Math.random() * 100000000)
           .toString()
           .padStart(8, '0')}`,
@@ -298,7 +323,7 @@ async function main() {
     await prisma.pointRule.create({
       data: {
         ...rule,
-        userId: demoUser.id,
+        userId: teacherUser.user.id,
       },
     })
   }
@@ -362,7 +387,7 @@ async function main() {
     await prisma.storeItem.create({
       data: {
         ...item,
-        userId: demoUser.id,
+        userId: teacherUser.user.id,
       },
     })
   }
@@ -371,12 +396,15 @@ async function main() {
 
   console.log('✨ 数据库种子数据初始化完成！')
   console.log('\n📊 数据统计:')
-  console.log(`  - 用户: 1`)
+  console.log(`  - 用户: 2 (1 管理员, 1 教师)`)
   console.log(`  - 学生: ${students.length}`)
   console.log(`  - 分组: 3`)
   console.log(`  - 标签: 3`)
   console.log(`  - 积分规则: ${pointRules.length}`)
   console.log(`  - 商城商品: ${storeItems.length}`)
+  console.log('\n🔐 登录信息:')
+  console.log(`  管理员: admin@example.com / Admin@123456`)
+  console.log(`  教师: teacher@example.com / Teacher@123456`)
   console.log('\n💡 提示: 使用以下命令运行种子数据:')
   console.log('   pnpm db:seed')
 }

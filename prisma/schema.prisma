@@ -13,6 +13,10 @@ model User {
   email         String         @unique
   emailVerified Boolean        @default(false) @map("email_verified")
   image         String?
+  role          String         @default("user") // 用户角色: admin, user
+  banned        Boolean        @default(false) // 是否被禁用
+  banReason     String?        @map("ban_reason") // 禁用原因
+  banExpires    DateTime?      @map("ban_expires") // 禁用到期时间
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   accounts      Account[]
