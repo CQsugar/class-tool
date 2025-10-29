@@ -227,27 +227,27 @@ build_image() {
 
 # 导出镜像为 tar 文件
 export_image() {
-    echo -e "${BLUE}📦 导出 Docker 镜像...${NC}"
+    echo -e "${BLUE}📦 导出 Docker 镜像...${NC}" >&2
     
     local tar_file="${IMAGE_NAME}_${IMAGE_TAG}.tar"
     
     # 导出镜像
     docker save -o "$tar_file" "$IMAGE_NAME:$IMAGE_TAG" || {
-        echo -e "${RED}❌ 镜像导出失败${NC}"
+        echo -e "${RED}❌ 镜像导出失败${NC}" >&2
         exit 1
     }
     
     # 压缩镜像文件
-    echo -e "${BLUE}🗜️  压缩镜像文件...${NC}"
+    echo -e "${BLUE}🗜️  压缩镜像文件...${NC}" >&2
     gzip "$tar_file" || {
-        echo -e "${RED}❌ 镜像压缩失败${NC}"
+        echo -e "${RED}❌ 镜像压缩失败${NC}" >&2
         exit 1
     }
     
     local compressed_file="${tar_file}.gz"
     local file_size=$(du -sh "$compressed_file" | cut -f1)
     
-    echo -e "${GREEN}✅ 镜像导出完成: $compressed_file (大小: $file_size)${NC}"
+    echo -e "${GREEN}✅ 镜像导出完成: $compressed_file (大小: $file_size)${NC}" >&2
     echo "$compressed_file"
 }
 
