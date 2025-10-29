@@ -291,6 +291,11 @@ transfer_files() {
         exit 1
     }
     
+    # 创建远程 scripts 和 backups 目录
+    $(get_ssh_cmd) "mkdir -p '$REMOTE_PROJECT_DIR/scripts' '$REMOTE_PROJECT_DIR/backups'" || {
+        echo -e "${YELLOW}⚠️  创建目录失败${NC}"
+    }
+    
     # 传输管理脚本（可选但有用）
     echo "传输管理脚本..."
     $(get_scp_cmd "scripts/backup.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  backup.sh 传输失败，跳过${NC}"
@@ -298,9 +303,6 @@ transfer_files() {
     $(get_scp_cmd "scripts/maintenance.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  maintenance.sh 传输失败，跳过${NC}"
     $(get_scp_cmd "scripts/status.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  status.sh 传输失败，跳过${NC}"
     $(get_scp_cmd "scripts/check-env.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  check-env.sh 传输失败，跳过${NC}"
-    
-    # 创建 backups 目录
-    $(get_ssh_cmd) "mkdir -p '$REMOTE_PROJECT_DIR/backups'" || echo -e "${YELLOW}⚠️  创建 backups 目录失败${NC}"
     
     # 传输环境配置文件
     if [ -f ".env.production" ]; then
@@ -428,27 +430,7 @@ show_deployment_info() {
     echo "  项目目录: $REMOTE_PROJECT_DIR"
     echo ""
     echo -e "${BLUE}🌐 访问地址:${NC}"
-    echo "  请在远程服务器上配置 .env.production 文件"
-    echo "  然后访问配置的域名"
-    echo ""
-    echo -e "${BLUE}📝 后续操作:${NC}"
-    echo "  1. SSH 登录远程服务器:"
-    if [[ -n "$SSH_TARGET" && "$SSH_TARGET" != *"@"* ]]; then
-        echo "     ssh $SSH_TARGET"
-    else
-        echo "     ssh ${REMOTE_PORT:+-p $REMOTE_PORT} ${REMOTE_USER:+$REMOTE_USER@}$REMOTE_HOST"
-    fi
-    echo ""
-    echo "  2. 编辑环境配置:"
-    echo "     cd $REMOTE_PROJECT_DIR"
-    echo "     nano .env.production"
-    echo ""
-    echo "  3. 重启服务以应用配置:"
-    echo "     docker compose -f docker-compose.prod.yml restart"
-    echo ""
-    echo "  4. 查看服务状态:"
-    echo "     docker compose -f docker-compose.prod.yml ps"
-    echo "     docker compose -f docker-compose.prod.yml logs -f"
+    echo "  https://your-domain.com (配置域名后访问)"
     echo ""
 }
 

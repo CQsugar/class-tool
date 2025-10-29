@@ -24,16 +24,18 @@ services:
     labels:
       # 启用 Traefik 自身管理
       traefik.enable: true
-      # Dashboard 配置 (可选，用于监控)
-      traefik.http.routers.traefik.rule: Host(`traefik.${DOMAIN:-localhost}`)
+      # 指定使用的 Docker 网络
+      traefik.docker.network: class-tool_app-network
+      # Dashboard 配置 - 使用固定的 traefik 子域名
+      traefik.http.routers.traefik.rule: Host(`${TRAEFIK_DOMAIN:-localhost}`)
       traefik.http.routers.traefik.entrypoints: websecure
       traefik.http.routers.traefik.tls.certresolver: letsencrypt
       traefik.http.routers.traefik.service: 'api@internal'
-      # Dashboard 认证 (使用 htpasswd 生成)
-      # 默认用户名: admin, 密码: admin (生产环境务必修改)
-      # 生成命令: echo $(htpasswd -nb admin password) | sed -e s/\\$/\\$\\$/g
+      # Dashboard 认证 (使用环境变量配置)
+      # 修改密码: 在 .env 中设置 TRAEFIK_AUTH_USERS
+      # 生成命令: echo $(htpasswd -nb admin 新密码) | sed -e s/\\$/\\$\\$/g
       traefik.http.routers.traefik.middlewares: auth
-      traefik.http.middlewares.auth.basicauth.users: 'admin:$$apr1$$CzbK/tWo$$sts1pjK3.971VFa7.BwIJ0'
+      traefik.http.middlewares.auth.basicauth.users: ${TRAEFIK_AUTH_USERS:-admin:$$apr1$$Tf9lEeNC$$mlz/VTAz7Z5p7c9KOGrKu0}
 
   # PostgreSQL 数据库服务
   postgres:
@@ -95,7 +97,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3000/api/health']
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1:3000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -103,14 +105,39 @@ services:
     labels:
       # 启用 Traefik
       traefik.enable: true
-      # 路由规则
+      # 指定使用的 Docker 网络
+      traefik.docker.network: class-tool_app-network
+
+      # 主路由规则 - 使用环境变量 DOMAIN
       traefik.http.routers.class-tool.rule: Host(`${DOMAIN:-localhost}`)
       traefik.http.routers.class-tool.entrypoints: websecure
       traefik.http.routers.class-tool.tls.certresolver: letsencrypt
+      traefik.http.routers.class-tool.middlewares: security-headers
+
+      # 重定向路由 - 使用环境变量 ROOT_DOMAIN (根域名重定向到 www)
+      traefik.http.routers.class-tool-redirect.rule: Host(`${ROOT_DOMAIN:-}`)
+      traefik.http.routers.class-tool-redirect.entrypoints: websecure
+      traefik.http.routers.class-tool-redirect.tls.certresolver: letsencrypt
+      traefik.http.routers.class-tool-redirect.middlewares: redirect-to-www
+
+      # HTTP 到 HTTPS 重定向（所有域名）
+      traefik.http.routers.class-tool-http.rule: Host(`${DOMAIN:-localhost}`) || Host(`${ROOT_DOMAIN:-}`)
+      traefik.http.routers.class-tool-http.entrypoints: web
+      traefik.http.routers.class-tool-http.middlewares: redirect-to-https
+
       # 负载均衡配置
       traefik.http.services.class-tool.loadbalancer.server.port: 3000
+
+      # 中间件：重定向到 www (使用环境变量)
+      traefik.http.middlewares.redirect-to-www.redirectregex.regex: ^https://${ROOT_DOMAIN:-ccsong.top}/(.*)
+      traefik.http.middlewares.redirect-to-www.redirectregex.replacement: https://${DOMAIN:-www.ccsong.top}/$${1}
+      traefik.http.middlewares.redirect-to-www.redirectregex.permanent: true
+
+      # 中间件：HTTP 到 HTTPS
+      traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+      traefik.http.middlewares.redirect-to-https.redirectscheme.permanent: true
+
       # 安全头部中间件
-      traefik.http.routers.class-tool.middlewares: security-headers
       traefik.http.middlewares.security-headers.headers.stsSeconds: 31536000
       traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains: true
       traefik.http.middlewares.security-headers.headers.stsPreload: true

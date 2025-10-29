@@ -101,10 +101,11 @@ export const config = {
   /*
    * 匹配除以下路径外的所有请求路径:
    * - /api/auth (认证API)
+   * - /api/health (健康检查API，用于Docker容器健康检查)
    * - _next/static (static files)
    * - _next/image (image optimization files)
    * - favicon.ico (favicon file)
    */
   runtime: 'nodejs',
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api/auth|api/health|_next/static|_next/image|favicon.ico).*)'],
 }
