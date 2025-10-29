@@ -23,17 +23,17 @@ services:
       - app-network
     labels:
       # 启用 Traefik 自身管理
-      - 'traefik.enable=true'
+      traefik.enable: true
       # Dashboard 配置 (可选，用于监控)
-      - 'traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN:-localhost}`)'
-      - 'traefik.http.routers.traefik.entrypoints=websecure'
-      - 'traefik.http.routers.traefik.tls.certresolver=letsencrypt'
-      - 'traefik.http.routers.traefik.service=api@internal'
+      traefik.http.routers.traefik.rule: Host(`traefik.${DOMAIN:-localhost}`)
+      traefik.http.routers.traefik.entrypoints: websecure
+      traefik.http.routers.traefik.tls.certresolver: letsencrypt
+      traefik.http.routers.traefik.service: 'api@internal'
       # Dashboard 认证 (使用 htpasswd 生成)
       # 默认用户名: admin, 密码: admin (生产环境务必修改)
       # 生成命令: echo $(htpasswd -nb admin password) | sed -e s/\\$/\\$\\$/g
-      - 'traefik.http.routers.traefik.middlewares=auth'
-      - 'traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$CzbK/tWo$$sts1pjK3.971VFa7.BwIJ0'
+      traefik.http.routers.traefik.middlewares: auth
+      traefik.http.middlewares.auth.basicauth.users: 'admin:$$apr1$$CzbK/tWo$$sts1pjK3.971VFa7.BwIJ0'
 
   # PostgreSQL 数据库服务
   postgres:
@@ -98,19 +98,19 @@ services:
       start_period: 40s
     labels:
       # 启用 Traefik
-      - 'traefik.enable=true'
+      traefik.enable: true
       # 路由规则
-      - 'traefik.http.routers.class-tool.rule=Host(`${DOMAIN:-localhost}`)'
-      - 'traefik.http.routers.class-tool.entrypoints=websecure'
-      - 'traefik.http.routers.class-tool.tls.certresolver=letsencrypt'
+      traefik.http.routers.class-tool.rule: Host(`${DOMAIN:-localhost}`)
+      traefik.http.routers.class-tool.entrypoints: websecure
+      traefik.http.routers.class-tool.tls.certresolver: letsencrypt
       # 负载均衡配置
-      - 'traefik.http.services.class-tool.loadbalancer.server.port=3000'
+      traefik.http.services.class-tool.loadbalancer.server.port: 3000
       # 安全头部中间件
-      - 'traefik.http.routers.class-tool.middlewares=security-headers'
-      - 'traefik.http.middlewares.security-headers.headers.stsSeconds=31536000'
-      - 'traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true'
-      - 'traefik.http.middlewares.security-headers.headers.stsPreload=true'
-      - 'traefik.http.middlewares.security-headers.headers.forceSTSHeader=true'
+      traefik.http.routers.class-tool.middlewares: security-headers
+      traefik.http.middlewares.security-headers.headers.stsSeconds: 31536000
+      traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains: true
+      traefik.http.middlewares.security-headers.headers.stsPreload: true
+      traefik.http.middlewares.security-headers.headers.forceSTSHeader: true
 
 # 注意: 使用本地目录映射,不再需要 Docker volumes
 # 所有数据将存储在 ${DATA_DIR:-./data} 目录下
