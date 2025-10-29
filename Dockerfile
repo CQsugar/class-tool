@@ -5,23 +5,19 @@
 
 FROM node:22-alpine AS base
 
-# 安装依赖
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-
-# 安装全局依赖并设置 pnpm
-RUN corepack enable pnpm
 
 # 安装依赖阶段
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
+WORKDIR /app
 
-# 复制依赖配置文件
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
 RUN \
-    if [ -f pnpm-lock.yaml ]; then pnpm i --frozen-lockfile; \
-    else echo "Lockfile not found." && exit 1; \
-    fi
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
 # 构建阶段
 FROM base AS builder
