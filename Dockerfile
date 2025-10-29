@@ -12,12 +12,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
-RUN \
-    if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-    else echo "Lockfile not found." && exit 1; \
-    fi
+RUN corepack enable pnpm
+RUN pnpm i --frozen-lockfile
 
 # 构建阶段
 FROM base AS builder
@@ -32,18 +28,15 @@ COPY . .
 # 复制环境配置文件（用于构建时读取 NEXT_PUBLIC_* 变量）
 COPY .env* ./
 
+RUN corepack enable pnpm
+
 # 生成 Prisma Client
 RUN pnpm db:generate
 
 # 禁用 Next.js 遥测并构建应用
 ENV NEXT_TELEMETRY_DISABLED=1
 # build
-RUN \
-    if [ -f yarn.lock ]; then yarn run build; \
-    elif [ -f package-lock.json ]; then npm run build; \
-    elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-    else echo "Lockfile not found." && exit 1; \
-    fi
+RUN pnpm run build
 
 # 运行时阶段
 FROM base AS runner
