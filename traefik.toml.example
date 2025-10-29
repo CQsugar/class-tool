@@ -44,7 +44,7 @@
 
 # Let's Encrypt 自动证书配置
 [certificatesResolvers.letsencrypt.acme]
-  email = "admin@example.com"  # 修改为你的邮箱
+  email = "1186765234@qq.com"  # 修改为你的邮箱
   storage = "/letsencrypt/acme.json"
   
   # 使用 HTTP 验证 (推荐)

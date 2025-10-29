@@ -5,7 +5,7 @@
 services:
   # Traefik 反向代理和自动 HTTPS
   traefik:
-    image: traefik:v3.2
+    image: traefik:v3
     container_name: class-tool-traefik
     restart: unless-stopped
     ports:

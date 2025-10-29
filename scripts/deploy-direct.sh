@@ -48,13 +48,13 @@ get_scp_cmd() {
 }
 
 # 配置变量 - 请根据实际情况修改
-REMOTE_HOST="your-server.com"  # 远程服务器地址
-REMOTE_USER="root"             # 远程服务器用户
-REMOTE_PORT="22"               # SSH 端口
-SSH_TARGET=""                  # SSH 目标 (格式: user@host 或 ssh-config-name)
-IMAGE_NAME="class-tool"        # 镜像名称
-IMAGE_TAG="latest"             # 镜像标签
-REMOTE_PROJECT_DIR="/opt/class-tool"  # 远程项目目录
+REMOTE_HOST="${REMOTE_HOST:-your-server.com}"     # 远程服务器地址
+REMOTE_USER="${REMOTE_USER:-root}"                # 远程服务器用户
+REMOTE_PORT="${REMOTE_PORT:-22}"                  # SSH 端口
+SSH_TARGET="${SSH_TARGET:-}"                      # SSH 目标 (格式: user@host 或 ssh-config-name)
+IMAGE_NAME="${IMAGE_NAME:-class-tool}"            # 镜像名称
+IMAGE_TAG="${IMAGE_TAG:-latest}"                  # 镜像标签
+REMOTE_PROJECT_DIR="${REMOTE_PROJECT_DIR:-/opt/class-tool}"  # 远程项目目录
 
 # 显示使用说明
 show_usage() {
@@ -72,6 +72,15 @@ show_usage() {
     echo "  --project-dir <path>    远程项目目录 (默认: $REMOTE_PROJECT_DIR)"
     echo "  --image-name <name>     镜像名称 (默认: $IMAGE_NAME)"
     echo "  --image-tag <tag>       镜像标签 (默认: $IMAGE_TAG)"
+    echo ""
+    echo "环境变量:"
+    echo "  REMOTE_HOST             远程服务器地址"
+    echo "  REMOTE_USER             远程服务器用户"
+    echo "  REMOTE_PORT             SSH 端口"
+    echo "  SSH_TARGET              SSH 目标"
+    echo "  REMOTE_PROJECT_DIR      远程项目目录"
+    echo "  IMAGE_NAME              镜像名称"
+    echo "  IMAGE_TAG               镜像标签"
     echo ""
     echo "示例:"
     echo "  # 使用传统参数"
@@ -257,8 +266,8 @@ transfer_files() {
     
     echo -e "${BLUE}🚚 传输文件到远程服务器...${NC}"
     
-    # 创建远程目录
-    $(get_ssh_cmd) "mkdir -p '$REMOTE_PROJECT_DIR'" || {
+    # 创建远程目录并设置正确的权限
+    $(get_ssh_cmd) "sudo mkdir -p '$REMOTE_PROJECT_DIR' && sudo chown \$(whoami):\$(whoami) '$REMOTE_PROJECT_DIR'" || {
         echo -e "${RED}❌ 远程目录创建失败${NC}"
         exit 1
     }
@@ -282,11 +291,35 @@ transfer_files() {
         exit 1
     }
     
-    # 传输环境配置文件模板
-    $(get_scp_cmd ".env.production.image.example" "$REMOTE_PROJECT_DIR/") || {
-        echo -e "${RED}❌ .env.production.image.example 传输失败${NC}"
-        exit 1
-    }
+    # 传输管理脚本（可选但有用）
+    echo "传输管理脚本..."
+    $(get_scp_cmd "scripts/backup.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  backup.sh 传输失败，跳过${NC}"
+    $(get_scp_cmd "scripts/restore.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  restore.sh 传输失败，跳过${NC}"
+    $(get_scp_cmd "scripts/maintenance.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  maintenance.sh 传输失败，跳过${NC}"
+    $(get_scp_cmd "scripts/status.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  status.sh 传输失败，跳过${NC}"
+    $(get_scp_cmd "scripts/check-env.sh" "$REMOTE_PROJECT_DIR/scripts/") || echo -e "${YELLOW}⚠️  check-env.sh 传输失败，跳过${NC}"
+    
+    # 创建 backups 目录
+    $(get_ssh_cmd) "mkdir -p '$REMOTE_PROJECT_DIR/backups'" || echo -e "${YELLOW}⚠️  创建 backups 目录失败${NC}"
+    
+    # 传输环境配置文件
+    if [ -f ".env.production" ]; then
+        echo "传输生产环境配置..."
+        $(get_scp_cmd ".env.production" "$REMOTE_PROJECT_DIR/") || {
+            echo -e "${RED}❌ .env.production 传输失败${NC}"
+            exit 1
+        }
+    else
+        echo "传输环境配置模板..."
+        $(get_scp_cmd ".env.production.image.example" "$REMOTE_PROJECT_DIR/") || {
+            echo -e "${RED}❌ .env.production.image.example 传输失败${NC}"
+            exit 1
+        }
+    fi
+    
+    # 传输成功后立即删除本地压缩文件
+    echo "🗑️  删除本地镜像文件..."
+    rm -f "$compressed_file" || echo -e "${YELLOW}⚠️  删除本地文件失败: $compressed_file${NC}"
     
     echo -e "${GREEN}✅ 文件传输完成${NC}"
 }
@@ -314,11 +347,30 @@ docker load -i '$tar_file'
 echo "🗑️  清理镜像文件..."
 rm -f '$tar_file'
 
-echo "📝 创建环境配置..."
+echo "📝 检查环境配置..."
 if [ ! -f ".env.production" ]; then
-    cp .env.production.image.example .env.production
-    echo "⚠️  请编辑 .env.production 文件，配置正确的环境变量"
-    echo "   nano .env.production"
+    if [ -f ".env.production.image.example" ]; then
+        cp .env.production.image.example .env.production
+        echo "⚠️  已从模板创建 .env.production 文件"
+        echo "   请编辑配置: nano .env.production"
+    else
+        echo "❌ 错误: 没有找到环境配置文件"
+        exit 1
+    fi
+else
+    echo "✅ 环境配置文件已存在"
+fi
+
+echo "🔗 创建 Docker Compose 环境文件..."
+# Docker Compose 默认读取 .env 文件，所以复制 .env.production 到 .env
+cp .env.production .env
+echo "✅ 已创建 .env 文件供 Docker Compose 使用"
+
+echo "🔧 设置脚本权限..."
+# 为管理脚本添加执行权限
+if [ -d "scripts" ]; then
+    chmod +x scripts/*.sh 2>/dev/null || true
+    echo "✅ 脚本权限已设置"
 fi
 
 echo "🔄 停止现有服务..."
@@ -350,10 +402,11 @@ EOF
 
 # 清理本地文件
 cleanup() {
-    echo -e "${BLUE}🧹 清理本地文件...${NC}"
+    echo -e "${BLUE}🧹 清理临时文件...${NC}"
     
-    # 删除压缩的镜像文件
-    rm -f "${IMAGE_NAME}_${IMAGE_TAG}.tar.gz"
+    # 删除可能遗留的临时文件
+    rm -f /tmp/remote_deploy.sh
+    rm -f "${IMAGE_NAME}_${IMAGE_TAG}.tar.gz" 2>/dev/null || true
     
     echo -e "${GREEN}✅ 清理完成${NC}"
 }
