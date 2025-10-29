@@ -85,8 +85,15 @@ validate_env() {
         exit 1
     fi
     
+    # 检查构建时环境变量（NEXT_PUBLIC_* 变量会在构建时从 .env.production 读取）
+    echo "检查构建时环境变量文件..."
+    if [[ -z "$NEXT_PUBLIC_APP_URL" ]]; then
+        echo -e "${YELLOW}⚠️  注意: NEXT_PUBLIC_APP_URL 未设置，将使用默认值${NC}"
+    fi
+    
     echo -e "${GREEN}✅ 环境配置验证完成${NC}"
     echo -e "${BLUE}📍 部署域名: ${DOMAIN}${NC}"
+    echo -e "${BLUE}📍 ICP备案号: ${NEXT_PUBLIC_ICP_NUMBER:-未配置}${NC}"
 }
 
 # 准备数据目录
@@ -298,13 +305,16 @@ show_info() {
     echo "🌐 访问地址:"
     echo "  应用主页: ${NEXT_PUBLIC_APP_URL:-https://$DOMAIN}"
     if [[ "$DOMAIN" != "localhost" ]]; then
-        echo "  Traefik 监控: https://traefik.${DOMAIN} (admin/admin)"
+        echo "  Traefik Dashboard: https://traefik.${DOMAIN} (用户名/密码: admin/admin)"
+        echo "  Traefik Dashboard (HTTP): http://$(hostname -I | awk '{print $1}'):8080"
     fi
     echo ""
     echo "🔐 安全提醒:"
-    echo "  1. 修改 Traefik Dashboard 默认密码"
-    echo "  2. 定期备份数据库数据"
-    echo "  3. 监控 SSL 证书自动续期状态"
+    echo "  1. 立即修改 Traefik Dashboard 默认密码 (admin/admin)"
+    echo "  2. 生产环境建议关闭 8080 端口，仅通过 HTTPS 访问 Dashboard"
+    echo "  3. 配置防火墙限制不必要的端口访问"
+    echo "  4. 定期备份数据库数据"
+    echo "  5. 监控 SSL 证书自动续期状态"
     echo ""
     echo "📁 数据目录: ${DATA_DIR:-./data}"
     echo "  - postgres: 数据库文件"

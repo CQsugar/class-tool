@@ -38,6 +38,10 @@ COPY prisma ./prisma/
 # 生成 Prisma Client
 RUN pnpm db:generate
 
+# 复制环境配置文件（用于构建时读取 NEXT_PUBLIC_* 变量）
+# 支持 .env 和 .env.production 文件
+COPY .env* ./
+
 # 构建 Next.js 应用
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
@@ -60,10 +64,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.ts ./next.config.ts
 
-# 复制 Prisma 相关文件
+# 复制构建产物和依赖
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules ./node_modules
 
 # 设置正确的权限
 RUN mkdir -p .next
