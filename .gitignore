@@ -57,4 +57,4 @@ next-env.d.ts
 
 # production environment
 .env.production
-!.env.production.example
+!.env.*.example

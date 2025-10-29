@@ -17,6 +17,7 @@ module.exports = {
         'ci', // CI配置文件和脚本的变动
         'build', // 影响构建系统或外部依赖的变动
         'revert', // 回滚
+        'clear', // 代码清理等等
       ],
     ],
     // Subject规则
