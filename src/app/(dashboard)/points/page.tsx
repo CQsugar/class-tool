@@ -170,24 +170,24 @@ export default function PointsPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>积分规则管理</CardTitle>
               <CardDescription>管理班级积分加减规则和分类</CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 variant="outline"
                 onClick={() => setResetDialogOpen(true)}
-                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground w-full sm:w-auto"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 重置积分
               </Button>
-              <Button onClick={() => setFormOpen(true)}>
+              <Button onClick={() => setFormOpen(true)} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 添加规则
               </Button>

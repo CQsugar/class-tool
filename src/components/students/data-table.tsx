@@ -253,8 +253,8 @@ export function DataTable<TData, TValue>({
 
       {/* 分页 - 根据是否有服务端分页参数显示不同样式 */}
       {useServerPagination ? (
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <p className="text-muted-foreground text-sm">每页显示</p>
             <Select
               value={pageSize?.toString()}
@@ -279,16 +279,17 @@ export function DataTable<TData, TValue>({
               </p>
             )}
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center gap-2 sm:justify-end">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange?.(currentPage - 1)}
               disabled={currentPage === 1}
+              className="h-8"
             >
               上一页
             </Button>
-            <div className="text-sm">
+            <div className="text-muted-foreground text-sm">
               第 {currentPage} / {pageCount || 1} 页
             </div>
             <Button
@@ -296,22 +297,23 @@ export function DataTable<TData, TValue>({
               size="sm"
               onClick={() => onPageChange?.(currentPage + 1)}
               disabled={currentPage >= (pageCount || 1)}
+              className="h-8"
             >
               下一页
             </Button>
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="text-muted-foreground flex-1 text-sm">
+        <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+          <div className="text-muted-foreground text-center text-sm sm:flex-1 sm:text-left">
             已选择 {table.getFilteredSelectedRowModel().rows.length} 项，共{' '}
             {table.getFilteredRowModel().rows.length} 项
           </div>
-          <div className="space-x-2">
-            <Button variant="outline" size="sm" disabled>
+          <div className="flex justify-center gap-2">
+            <Button variant="outline" size="sm" disabled className="h-8">
               上一页
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" disabled className="h-8">
               下一页
             </Button>
           </div>

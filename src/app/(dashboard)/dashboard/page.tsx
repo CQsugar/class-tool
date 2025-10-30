@@ -38,11 +38,13 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-4 p-2 pt-0 sm:gap-6 sm:p-4 sm:pt-0">
       {/* 欢迎区域 */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">控制台</h1>
-        <p className="text-muted-foreground">欢迎回来,{session.user.name}!查看您的班级管理概况</p>
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl font-bold sm:text-3xl">控制台</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
+          欢迎回来,{session.user.name}!查看您的班级管理概况
+        </p>
       </div>
 
       {/* Dashboard 客户端组件（包含统计卡片、快速积分、排行榜）*/}

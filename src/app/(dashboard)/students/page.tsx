@@ -401,22 +401,24 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">学生管理</h2>
-          <p className="text-muted-foreground">管理班级学生信息，支持批量操作和数据导入导出</p>
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">学生管理</h2>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            管理班级学生信息，支持批量操作和数据导入导出
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleImport}>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button variant="outline" onClick={handleImport} className="w-full sm:w-auto">
             <Upload className="mr-2 h-4 w-4" />
             导入
           </Button>
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="outline" onClick={handleExport} className="w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" />
             导出
           </Button>
-          <Button onClick={handleAdd}>
+          <Button onClick={handleAdd} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             添加学生
           </Button>
@@ -481,7 +483,7 @@ export default function StudentsPage() {
         </CardHeader>
         <CardContent>
           {/* 过滤器 */}
-          <div className="mb-4 flex items-center gap-4">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
             <Select
               value={groupFilter}
               onValueChange={value => {
@@ -489,7 +491,7 @@ export default function StudentsPage() {
                 setCurrentPage(1)
               }}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="选择分组" />
               </SelectTrigger>
               <SelectContent>
@@ -509,7 +511,7 @@ export default function StudentsPage() {
                 setCurrentPage(1)
               }}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="选择标签" />
               </SelectTrigger>
               <SelectContent>

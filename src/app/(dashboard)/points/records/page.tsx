@@ -108,10 +108,10 @@ export default function PointRecordsPage() {
   }, [currentPage, pageSize, search, typeFilter, studentFilter])
 
   return (
-    <div className="container mx-auto space-y-6 py-6">
+    <div className="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">积分记录</h2>
-        <p className="text-muted-foreground">查看所有学生的积分变动历史</p>
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">积分记录</h2>
+        <p className="text-muted-foreground text-sm sm:text-base">查看所有学生的积分变动历史</p>
       </div>
 
       {/* 统计卡片 */}

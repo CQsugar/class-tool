@@ -127,8 +127,8 @@ export function StudentTagDataTable<TData, TValue>({
 
       {/* 分页 - 仅在提供分页参数时显示 */}
       {pageCount !== undefined && currentPage !== undefined && pageSize !== undefined && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <p className="text-muted-foreground text-sm">每页显示</p>
             <Select
               value={pageSize.toString()}
@@ -146,16 +146,17 @@ export function StudentTagDataTable<TData, TValue>({
             </Select>
             <p className="text-muted-foreground text-sm">条</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center gap-2 sm:justify-end">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange?.(currentPage - 1)}
               disabled={currentPage === 1}
+              className="h-8"
             >
               上一页
             </Button>
-            <div className="text-sm">
+            <div className="text-muted-foreground text-sm">
               第 {currentPage} / {pageCount || 1} 页
             </div>
             <Button
@@ -163,6 +164,7 @@ export function StudentTagDataTable<TData, TValue>({
               size="sm"
               onClick={() => onPageChange?.(currentPage + 1)}
               disabled={currentPage >= pageCount}
+              className="h-8"
             >
               下一页
             </Button>

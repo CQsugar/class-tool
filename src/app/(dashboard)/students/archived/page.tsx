@@ -127,12 +127,14 @@ export default function ArchivedStudentsPage() {
   return (
     <div className="space-y-6">
       {/* 页面标题 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">归档学生</h1>
-          <p className="text-muted-foreground mt-2">查看已归档的学生信息,用于数据分析和历史记录</p>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">归档学生</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:mt-2 sm:text-base">
+            查看已归档的学生信息,用于数据分析和历史记录
+          </p>
         </div>
-        <Button onClick={handleExport} variant="outline">
+        <Button onClick={handleExport} variant="outline" className="w-full sm:w-auto">
           <Download className="mr-2 h-4 w-4" />
           导出数据
         </Button>
@@ -155,17 +157,17 @@ export default function ArchivedStudentsPage() {
       {/* 数据表格 */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>归档学生列表</CardTitle>
               <CardDescription>仅供查看,不支持任何编辑操作</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Select
                 value={sortBy}
                 onValueChange={(value: 'createdAt' | 'updatedAt') => setSortBy(value)}
               >
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -177,7 +179,7 @@ export default function ArchivedStudentsPage() {
                 value={sortOrder}
                 onValueChange={(value: 'asc' | 'desc') => setSortOrder(value)}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-full sm:w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

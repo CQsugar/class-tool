@@ -42,7 +42,7 @@ export const navGroups: NavGroup[] = [
         title: '学生管理',
         url: '#',
         icon: GraduationCap,
-        isActive: true,
+        isActive: false,
         items: [
           {
             title: '学生列表',
@@ -91,7 +91,7 @@ export const navGroups: NavGroup[] = [
         title: '积分管理',
         url: '#',
         icon: CircleStar,
-        isActive: true,
+        isActive: false,
         items: [
           {
             title: '积分规则',
@@ -107,7 +107,7 @@ export const navGroups: NavGroup[] = [
         title: '积分商城',
         url: '#',
         icon: Store,
-        isActive: true,
+        isActive: false,
         items: [
           {
             title: '商品管理',

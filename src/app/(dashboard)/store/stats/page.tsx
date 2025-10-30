@@ -130,13 +130,13 @@ export default function StoreStatsPage() {
   return (
     <div className="space-y-6">
       {/* 页头 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">商城统计</h1>
-          <p className="text-muted-foreground">查看商城运营数据和趋势分析</p>
+          <h1 className="text-2xl font-bold sm:text-3xl">商城统计</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">查看商城运营数据和趋势分析</p>
         </div>
         <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="w-full sm:w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

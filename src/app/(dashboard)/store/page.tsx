@@ -192,9 +192,9 @@ export default function StoreItemsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-4 p-2 pt-0 sm:gap-6 sm:p-4 sm:pt-0">
       {/* 页面标题 */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-2xl font-bold sm:text-3xl">商品管理</h1>
           <p className="text-muted-foreground text-sm">管理积分商城的商品和兑换奖励</p>

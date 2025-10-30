@@ -1,7 +1,8 @@
 'use client'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AccountSettingsCards, SecuritySettingsCards, UserAvatar } from '@daveyplate/better-auth-ui'
+import { SecuritySettingsCards, UserAvatar } from '@daveyplate/better-auth-ui'
+import { AccountSettings } from './account-settings'
 import { SecurityOverview } from './security-overview'
 import { SessionManagement } from './session-management'
 
@@ -18,7 +19,7 @@ export function ProfileForm() {
 
       {/* 设置标签页 */}
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="account">账户设置</TabsTrigger>
           <TabsTrigger value="security">安全设置</TabsTrigger>
           <TabsTrigger value="sessions">会话管理</TabsTrigger>
@@ -26,7 +27,7 @@ export function ProfileForm() {
         </TabsList>
 
         <TabsContent value="account" className="space-y-4">
-          <AccountSettingsCards />
+          <AccountSettings />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">

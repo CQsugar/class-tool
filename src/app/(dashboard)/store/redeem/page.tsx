@@ -245,11 +245,11 @@ export default function RedeemPage() {
   )
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-4 p-2 pt-0 sm:gap-6 sm:p-4 sm:pt-0">
       {/* 页面标题 */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">商品兑换</h1>
-        <p className="text-muted-foreground">为学生兑换积分商品</p>
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl font-bold sm:text-3xl">商品兑换</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">为学生兑换积分商品</p>
       </div>
 
       {/* 学生选择区域 */}

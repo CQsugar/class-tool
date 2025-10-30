@@ -13,12 +13,21 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import { NavItem } from '@/lib/navigation'
 import Link from 'next/link'
 
 export function Nav({ items, groupLabel = '主要' }: { items: NavItem[]; groupLabel?: string }) {
   const pathname = usePathname()
+  const { setOpenMobile, isMobile } = useSidebar()
+
+  // 处理链接点击 - 移动端自动关闭 sidebar
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
 
   return (
     <SidebarGroup>
@@ -35,7 +44,7 @@ export function Nav({ items, groupLabel = '主要' }: { items: NavItem[]; groupL
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
-                  <Link href={item.url}>
+                  <Link href={item.url} onClick={handleLinkClick}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                   </Link>
@@ -67,7 +76,7 @@ export function Nav({ items, groupLabel = '主要' }: { items: NavItem[]; groupL
                       return (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild isActive={isActive}>
-                            <Link href={subItem.url}>
+                            <Link href={subItem.url} onClick={handleLinkClick}>
                               <span>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>

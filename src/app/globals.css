@@ -180,3 +180,64 @@
 .animation-delay-2000 {
   animation-delay: 2s;
 }
+
+/* Better Auth UI 全局 loading 居中优化 */
+.better-auth-loading-container {
+  @apply flex min-h-screen items-center justify-center;
+}
+
+/* Better Auth UI 加载动画居中 */
+:where([data-better-auth-loading]) {
+  @apply flex min-h-screen items-center justify-center;
+}
+
+/* 全局 loading 居中优化 - 适用于所有 loading 状态 */
+[role='progressbar'],
+[aria-busy='true'],
+.loading-container,
+.auth-loading {
+  @apply flex min-h-screen items-center justify-center;
+}
+
+/* Better Auth UI 特定选择器 */
+:where([data-slot='auth-view']:has([role='progressbar'])),
+:where([data-slot='auth-view']:has([aria-busy='true'])) {
+  @apply flex min-h-screen items-center justify-center;
+}
+
+/* 确保父容器也居中 */
+:where(main:has([data-better-auth-loading])),
+:where(div:has([data-better-auth-loading])):not([data-better-auth-loading]) {
+  @apply flex min-h-screen items-center justify-center;
+}
+
+/* Better Auth UI AuthView 容器居中 */
+:where([data-slot='auth-view']) {
+  @apply flex w-full items-center justify-center;
+  min-height: 400px;
+}
+
+/* Loading spinner 居中 - 使用更通用的选择器 */
+:where([data-slot='auth-view'] > *) {
+  @apply flex w-full items-center justify-center;
+}
+
+/* 针对 loading 状态的容器 */
+:where([data-slot='auth-view'][data-loading='true']),
+:where([data-slot='auth-view']:has(svg[role='progressbar'])) {
+  @apply flex min-h-[400px] w-full items-center justify-center;
+}
+
+/* 全局 loading 覆盖层 - 确保任何 loading 都居中 */
+body:has([role='progressbar']:not([class*='sidebar'])) {
+  @apply flex items-center justify-center;
+}
+
+/* SVG loading spinner 始终居中 */
+svg[role='progressbar'] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999;
+}

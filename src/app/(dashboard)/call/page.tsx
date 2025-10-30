@@ -162,18 +162,20 @@ export default function CallPage() {
 
   return (
     <div
-      className={`flex flex-1 flex-col gap-6 p-4 pt-0 ${isFullscreen ? 'bg-background fixed inset-0 z-50 flex items-center justify-center p-8' : ''}`}
+      className={`flex flex-1 flex-col gap-4 p-2 pt-0 sm:gap-6 sm:p-4 sm:pt-0 ${isFullscreen ? 'bg-background fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8' : ''}`}
     >
       {/* 页面标题 */}
       {!isFullscreen && (
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">随机点名</h1>
-          <p className="text-muted-foreground">随机选择学生，支持24小时避重机制</p>
+        <div className="space-y-1 sm:space-y-2">
+          <h1 className="text-2xl font-bold sm:text-3xl">随机点名</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            随机选择学生，支持24小时避重机制
+          </p>
         </div>
       )}
 
       <div
-        className={`grid gap-6 ${isFullscreen ? 'w-full max-w-6xl grid-cols-1' : 'lg:grid-cols-3'}`}
+        className={`grid gap-4 sm:gap-6 ${isFullscreen ? 'w-full max-w-6xl grid-cols-1' : 'lg:grid-cols-3'}`}
       >
         {/* 主要点名区域 */}
         <div className={isFullscreen ? 'w-full' : 'lg:col-span-2'}>

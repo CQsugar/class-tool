@@ -348,13 +348,15 @@ export default function PKPage() {
 
   return (
     <div
-      className={`flex flex-1 flex-col gap-6 p-4 pt-0 ${isFullscreen ? 'bg-background fixed inset-0 z-50 overflow-auto p-8' : ''}`}
+      className={`flex flex-1 flex-col gap-4 p-2 pt-0 sm:gap-6 sm:p-4 sm:pt-0 ${isFullscreen ? 'bg-background fixed inset-0 z-50 overflow-auto p-4 sm:p-8' : ''}`}
     >
       {/* 页面标题 */}
       {!isFullscreen && (
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">PK对战</h1>
-          <p className="text-muted-foreground">支持个人PK、分组PK和随机PK三种模式</p>
+        <div className="space-y-1 sm:space-y-2">
+          <h1 className="text-2xl font-bold sm:text-3xl">PK对战</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            支持个人PK、分组PK和随机PK三种模式
+          </p>
         </div>
       )}
 

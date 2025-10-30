@@ -200,7 +200,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
         {/* 右侧认证表单区域 */}
         <div
-          className={`flex w-full items-center justify-center ${showDecorationArea ? 'lg:w-1/2' : ''}`}
+          className={`flex w-full items-center justify-center p-4 ${showDecorationArea ? 'lg:w-1/2' : ''}`}
         >
           <div className="w-full max-w-md">{children}</div>
         </div>

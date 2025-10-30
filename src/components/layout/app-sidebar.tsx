@@ -11,6 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import { useSession } from '@/lib/auth-client'
 import { navGroups } from '@/lib/navigation'
@@ -21,6 +22,7 @@ import Link from 'next/link'
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
   const user = session?.user
+  const { setOpenMobile, isMobile } = useSidebar()
 
   // 基于用户权限过滤导航菜单
   const filteredNavGroups = React.useMemo(() => {
@@ -32,13 +34,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       .filter(group => group.items.length > 0) // 移除没有可见菜单项的分组
   }, [user])
 
+  // 处理 Logo 点击 - 移动端自动关闭 sidebar
+  const handleLogoClick = () => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
+              <Link href="/dashboard" onClick={handleLogoClick}>
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <GalleryVerticalEnd className="size-4" />
                 </div>

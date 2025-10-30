@@ -181,10 +181,12 @@ export default function StudentGroupsPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">学生分组</h1>
-        <p className="text-muted-foreground">创建和管理学生分组，便于批量操作</p>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">学生分组</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
+          创建和管理学生分组，便于批量操作
+        </p>
       </div>
 
       {/* 统计卡片 */}
