@@ -1,17 +1,19 @@
 # 班主任班级管理平台 - 生产环境部署指南
 
-本文档提供详细的生产环境部署步骤和最佳实践。项目已完全迁移到 Traefik 作为反向代理，提供自动 HTTPS 证书管理。
+本文档提供详细的生产环境部署步骤和最佳实践。项目使用 Traefik 作为反向代理，提供自动 HTTPS 证书管理和域名路由。
 
 ## 📋 目录
 
 - [系统要求](#系统要求)
 - [部署前准备](#部署前准备)
 - [快速部署](#快速部署)
+- [本地构建远程部署](#本地构建远程部署)
 - [Traefik 配置详解](#traefik-配置详解)
 - [环境配置](#环境配置)
 - [数据库管理](#数据库管理)
 - [监控和日志](#监控和日志)
 - [维护和更新](#维护和更新)
+- [故障排除](#故障排除)
 - [常见问题](#常见问题)
 
 ## 🖥️ 系统要求
@@ -244,9 +246,185 @@ docker compose -f docker-compose.prod.yml exec app sh -c "pnpm db:seed"
 # 安装 htpasswd 工具
 sudo apt install apache2-utils
 
-# 生成新的认证字符串
+# 生成新密码
 echo $(htpasswd -nb admin your-new-password) | sed -e s/\\$/\\$\\$/g
 ```
+
+将生成的字符串添加到 `.env.production` 文件中的 `TRAEFIK_AUTH_USERS` 变量，然后重新部署。
+
+---
+
+## 🔧 故障排除
+
+### 常见问题和解决方案
+
+#### 1. 应用容器显示 unhealthy
+
+**症状**: `docker compose ps` 显示应用状态为 `unhealthy`
+
+**可能原因**:
+
+- 数据库未初始化
+- 健康检查端点被中间件拦截
+- 应用启动失败
+
+**解决方案**:
+
+```bash
+# 查看应用日志
+docker compose -f docker-compose.prod.yml logs app --tail=100
+
+# 检查健康检查端点
+docker compose -f docker-compose.prod.yml exec app wget -q -O- http://127.0.0.1:3000/api/health
+
+# 初始化数据库（如果未初始化）
+docker compose -f docker-compose.prod.yml exec app npx prisma db push
+
+# 重启应用容器
+docker compose -f docker-compose.prod.yml restart app
+```
+
+#### 2. Traefik 返回 404 Page Not Found
+
+**症状**: 访问域名时返回 404 错误
+
+**可能原因**:
+
+- DNS 未正确解析到服务器
+- Docker 网络配置问题
+- 应用容器不健康
+
+**解决方案**:
+
+```bash
+# 检查 DNS 解析
+nslookup your-domain.com
+
+# 检查容器状态
+docker compose -f docker-compose.prod.yml ps
+
+# 查看 Traefik 日志
+docker compose -f docker-compose.prod.yml logs traefik --tail=50
+
+# 检查 Traefik 路由配置
+docker compose -f docker-compose.prod.yml exec traefik wget -q -O- http://localhost:8080/api/http/routers
+```
+
+#### 3. SSL 证书显示不安全
+
+**症状**: 浏览器提示证书不安全或未加密
+
+**可能原因**:
+
+- 证书正在申请中（需要等待几分钟）
+- Let's Encrypt 申请失败
+- DNS 配置错误
+
+**解决方案**:
+
+```bash
+# 查看 Traefik 证书日志
+docker compose -f docker-compose.prod.yml logs traefik | grep -i "certificate\|acme\|tls"
+
+# 检查证书文件
+ls -la data/letsencrypt/acme.json
+
+# 验证 SSL 证书
+openssl s_client -servername your-domain.com -connect your-domain.com:443 </dev/null 2>/dev/null | openssl x509 -noout -text | grep -E 'Issuer|Subject|Not'
+
+# 如果证书申请失败，删除证书文件重新申请
+rm data/letsencrypt/acme.json
+touch data/letsencrypt/acme.json
+chmod 600 data/letsencrypt/acme.json
+docker compose -f docker-compose.prod.yml restart traefik
+```
+
+#### 4. 数据库连接失败
+
+**症状**: 在宿主机执行 `pnpm db:push` 时提示无法连接数据库
+
+**原因**: 数据库在 Docker 容器内，宿主机的 `DATABASE_URL` 使用容器名称 `postgres`，在宿主机上无法解析
+
+**解决方案**:
+
+```bash
+# 方式一：在容器内执行（推荐）
+docker compose -f docker-compose.prod.yml exec app npx prisma db push
+docker compose -f docker-compose.prod.yml exec app npx tsx prisma/seed.ts
+
+# 方式二：修改宿主机的 DATABASE_URL（临时）
+DATABASE_URL="postgresql://postgres:password@localhost:5432/class_tool?schema=public" pnpm db:push
+```
+
+#### 5. Traefik Dashboard 密码不正确
+
+**症状**: 访问 Traefik Dashboard 时认证失败
+
+**解决方案**:
+
+```bash
+# 生成新的认证字符串
+echo $(htpasswd -nb admin your-password) | sed -e s/\\$/\\$\\$/g
+
+# 更新 .env.production 中的 TRAEFIK_AUTH_USERS
+nano .env.production
+
+# 重新部署
+docker compose -f docker-compose.prod.yml up -d traefik
+```
+
+#### 6. 域名重定向不生效
+
+**症状**: 访问根域名时没有重定向到 www 子域名
+
+**解决方案**:
+
+```bash
+# 检查 .env 配置
+cat .env | grep -E 'DOMAIN|ROOT_DOMAIN'
+
+# 应该包含：
+# DOMAIN=www.your-domain.com
+# ROOT_DOMAIN=your-domain.com
+
+# 重启服务
+docker compose -f docker-compose.prod.yml restart
+```
+
+### 完整的部署后检查清单
+
+```bash
+# 1. 检查所有容器状态
+docker compose -f docker-compose.prod.yml ps
+
+# 2. 检查应用日志
+docker compose -f docker-compose.prod.yml logs app --tail=50
+
+# 3. 检查 Traefik 日志
+docker compose -f docker-compose.prod.yml logs traefik --tail=50
+
+# 4. 测试健康检查
+docker compose -f docker-compose.prod.yml exec app wget -q -O- http://127.0.0.1:3000/api/health
+
+# 5. 测试 HTTPS 访问
+curl -I https://your-domain.com
+
+# 6. 检查数据库连接
+docker compose -f docker-compose.prod.yml exec app node -e "require('./prisma').prisma.\$connect().then(() => console.log('DB OK')).catch(console.error)"
+
+# 7. 查看生成的管理员账号
+docker compose -f docker-compose.prod.yml logs app | grep -A 10 "管理员账号"
+```
+
+更多详细的故障排除信息，请查看 [`docs/troubleshooting.md`](./troubleshooting.md)。
+
+---
+
+# 生成新的认证字符串
+
+echo $(htpasswd -nb admin your-new-password) | sed -e s/\\$/\\$\\$/g
+
+````
 
 然后更新 `docker-compose.prod.yml` 中 traefik 服务的 `basicauth.users` 标签。
 
@@ -270,7 +448,7 @@ docker compose -f docker-compose.prod.yml exec app sh -c "pnpm db:seed"
 
 # 6. 查看服务状态
 docker compose -f docker-compose.prod.yml ps
-```
+````
 
 ### 验证部署
 
@@ -326,7 +504,128 @@ docker compose -f docker-compose.prod.yml build --no-cache app
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-## 🔧 Traefik 配置详解
+## � 本地构建远程部署
+
+如果你的远程服务器配置较低，无法支持 Docker 构建操作，可以使用本地构建 + SSH 直接传输的方式部署。
+
+### 前提条件
+
+1. 本地机器已安装 Docker
+2. 配置了到远程服务器的 SSH 免密登录
+3. 远程服务器已安装 Docker 和 Docker Compose
+
+### 使用部署脚本
+
+项目提供了 `scripts/deploy-direct.sh` 脚本，自动完成本地构建、镜像传输和远程部署。
+
+#### 1. 配置 SSH
+
+**方式一：使用 SSH Config（推荐）**
+
+编辑 `~/.ssh/config`：
+
+```bash
+Host your-server
+  HostName your-server-ip
+  User root
+  IdentityFile ~/.ssh/your-key.pem
+```
+
+**方式二：使用环境变量**
+
+```bash
+export REMOTE_HOST=your-server-ip
+export REMOTE_USER=root
+export REMOTE_PORT=22
+```
+
+#### 2. 配置环境变量
+
+```bash
+# 编辑生产环境配置
+cp .env.production.example .env.production
+nano .env.production
+
+# 必须修改的配置项（参考快速部署章节）
+```
+
+#### 3. 执行部署
+
+**使用 SSH Config：**
+
+```bash
+# 使用 SSH Config 中配置的主机名
+SSH_TARGET=your-server ./scripts/deploy-direct.sh
+```
+
+**使用环境变量：**
+
+```bash
+# 使用环境变量指定服务器
+REMOTE_HOST=your-server-ip \
+REMOTE_USER=root \
+./scripts/deploy-direct.sh
+```
+
+#### 4. 部署流程说明
+
+脚本会自动执行以下步骤：
+
+1. 🔨 在本地构建 Docker 镜像
+2. 📦 导出镜像为 tar.gz 压缩文件
+3. 🚚 通过 SSH 传输文件到远程服务器
+4. 📥 在远程服务器加载镜像
+5. 🚀 启动/更新服务
+6. 🗑️ 清理临时文件
+
+#### 5. 自定义配置
+
+脚本支持以下环境变量：
+
+```bash
+# SSH 连接配置
+SSH_TARGET=ssh-config-name        # SSH Config 中的主机名
+REMOTE_HOST=server-ip             # 远程服务器 IP
+REMOTE_USER=root                  # SSH 用户名
+REMOTE_PORT=22                    # SSH 端口
+
+# 项目配置
+REMOTE_PROJECT_DIR=/opt/class-tool  # 远程项目目录
+IMAGE_NAME=class-tool                # 镜像名称
+IMAGE_TAG=latest                     # 镜像标签
+```
+
+#### 6. 初始化数据库
+
+首次部署后需要初始化数据库：
+
+```bash
+# SSH 登录到远程服务器
+ssh your-server
+
+# 进入项目目录
+cd /opt/class-tool
+
+# 初始化数据库结构
+docker compose -f docker-compose.prod.yml exec app npx prisma db push
+
+# 导入种子数据（可选）
+docker compose -f docker-compose.prod.yml exec app npx tsx prisma/seed.ts
+```
+
+### 部署脚本优势
+
+- ✅ **无需远程构建**：适用于低配置服务器
+- ✅ **自动化流程**：一键完成所有部署步骤
+- ✅ **增量更新**：仅传输变更的镜像层
+- ✅ **自动清理**：自动清理临时文件
+- ✅ **环境同步**：自动同步配置文件到远程
+
+### 故障排除
+
+如遇到部署问题，请参考 [故障排除](#故障排除) 章节或查看 `docs/troubleshooting.md`。
+
+## �🔧 Traefik 配置详解
 
 ### Traefik 主要特性
 
